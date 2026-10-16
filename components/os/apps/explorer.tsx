@@ -57,7 +57,7 @@ function FileView({ items, address, empty, menus, toolbar, winId }: { items: Ite
           <ul className="file-grid">
             {items.map((item) => (
               <li key={item.id}>
-                <button type="button" className={`file-icon ${selected === item.id ? 'is-selected' : ''}`} {...gesture(() => setSelected(item.id), item.onOpen)} onKeyDown={(e) => e.key === 'Enter' && item.onOpen()}>
+                <button type="button" className={`file-icon ${selected === item.id ? 'is-selected' : ''}`} {...gesture(() => setSelected(item.id), item.onOpen)}>
                   <OsIcon name={item.icon} size={32} />
                   <span>{item.name}</span>
                 </button>

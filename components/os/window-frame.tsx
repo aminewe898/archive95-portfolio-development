@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
+import { useEffect, useRef, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 import { OsIcon, type IconName } from './icons'
 import { useOs, type OsWindow } from './os-context'
 
@@ -25,6 +25,8 @@ const MIN_H = 140
 
 export function WindowFrame({ win, title, icon, active, resizable, dialog, onFocus, onMinimize, onToggleMaximize, onClose, onCommit, children }: Props) {
   const ref = useRef<HTMLElement>(null)
+  const cleanupGesture = useRef<(() => void) | null>(null)
+  useEffect(() => () => cleanupGesture.current?.(), [])
   const { t } = useOs()
   const titleId = `${win.id.replace(/[^a-z0-9]/gi, '-')}-title`
 
@@ -35,6 +37,7 @@ export function WindowFrame({ win, title, icon, active, resizable, dialog, onFoc
     if ((e.target as HTMLElement).closest('button')) return
     const el = ref.current
     if (!el) return
+    cleanupGesture.current?.()
     e.preventDefault()
     const startX = e.clientX
     const startY = e.clientY
@@ -49,13 +52,18 @@ export function WindowFrame({ win, title, icon, active, resizable, dialog, onFoc
       el.style.left = `${x}px`
       el.style.top = `${y}px`
     }
-    const up = () => {
+    const cleanup = () => {
       el.classList.remove('is-dragging')
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup', up)
       window.removeEventListener('pointercancel', up)
+      cleanupGesture.current = null
+    }
+    const up = () => {
+      cleanup()
       onCommit({ x, y })
     }
+    cleanupGesture.current = cleanup
     window.addEventListener('pointermove', move)
     window.addEventListener('pointerup', up)
     window.addEventListener('pointercancel', up)
@@ -65,6 +73,7 @@ export function WindowFrame({ win, title, icon, active, resizable, dialog, onFoc
     if (e.button !== 0) return
     const el = ref.current
     if (!el) return
+    cleanupGesture.current?.()
     e.preventDefault()
     e.stopPropagation()
     const startX = e.clientX
@@ -77,12 +86,17 @@ export function WindowFrame({ win, title, icon, active, resizable, dialog, onFoc
       el.style.width = `${w}px`
       el.style.height = `${h}px`
     }
-    const up = () => {
+    const cleanup = () => {
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup', up)
       window.removeEventListener('pointercancel', up)
+      cleanupGesture.current = null
+    }
+    const up = () => {
+      cleanup()
       onCommit({ w, h })
     }
+    cleanupGesture.current = cleanup
     window.addEventListener('pointermove', move)
     window.addEventListener('pointerup', up)
     window.addEventListener('pointercancel', up)

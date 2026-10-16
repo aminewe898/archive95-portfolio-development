@@ -435,3 +435,18 @@ img { image-rendering: pixelated; }
   .file-preview img { width: 115px; }
   .file-preview p { flex: 1 1 160px; }
 }
+
+/* Mail fields must share a label column; each field-row is one complete row. */
+.mail-fields { display: flex; flex-direction: column; gap: 6px; align-items: stretch; padding: 8px; }
+.mail-fields > .field-row { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 8px; align-items: center; }
+.mail-fields > .field-row input { margin: 0; }
+textarea.mail-body { width: calc(100% - 8px); margin: 0 4px; resize: none; padding: 10px; font: 13px/1.6 'Courier New', monospace; user-select: text; }
+.menu-dropdown .menu-item:focus-visible { background: var(--hilite); color: #fff; outline: 1px dotted #fff; outline-offset: -3px; }
+.notepad-text:focus-visible, textarea.mail-body:focus-visible { outline: 1px dotted #000080; outline-offset: -4px; }
+.task-list { overflow-x: auto; scrollbar-width: none; }
+.task-list::-webkit-scrollbar { display: none; }
+.task-button { flex-shrink: 0; }
+@media (max-width: 640px) {
+  .start-submenu { left: calc(100% - 22px); min-width: 0; width: min(180px, calc(100vw - 203px)); }
+  .start-submenu .start-item { white-space: normal; overflow-wrap: anywhere; }
+}

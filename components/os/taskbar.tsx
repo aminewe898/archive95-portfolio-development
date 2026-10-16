@@ -41,7 +41,11 @@ function StartMenu({ entries, onClose }: { entries: StartEntry[]; onClose: () =>
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
       items[(i - 1 + items.length) % items.length]?.focus()
-    } else if (e.key === 'Escape') onClose()
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      ref.current?.closest('.taskbar')?.querySelector<HTMLButtonElement>('.start-button')?.focus()
+      onClose()
+    } else if (e.key === 'Tab') onClose()
   }
 
   const renderItem = (entry: StartEntry, index: number, large: boolean) => (
@@ -72,7 +76,14 @@ function StartMenu({ entries, onClose }: { entries: StartEntry[]; onClose: () =>
         {entry.children && <span className="start-arrow" aria-hidden="true">►</span>}
       </button>
       {entry.children && sub === index && (
-        <div className="os-menu start-submenu" role="menu" onKeyDown={(e) => e.key === 'ArrowLeft' && setSub(null)}>
+        <div className="os-menu start-submenu" role="menu" aria-label={entry.label} onKeyDown={(e) => {
+          if (e.key === 'ArrowLeft') {
+            e.preventDefault()
+            e.stopPropagation()
+            e.currentTarget.parentElement?.querySelector<HTMLButtonElement>('.start-item')?.focus()
+            setSub(null)
+          }
+        }}>
           {entry.children.map((child, j) => renderItem(child, j, false))}
         </div>
       )}
@@ -167,7 +178,7 @@ export function Taskbar({ tasks, activeId, onTask }: { tasks: TaskItem[]; active
       <span className="taskbar-divider" aria-hidden="true" />
       <nav className="task-list" aria-label={t('Ventanas abiertas', 'Open windows')}>
         {tasks.map(({ win, title, icon }) => (
-          <button key={win.id} type="button" className={`task-button ${activeId === win.id && !win.minimized ? 'is-pressed' : ''}`} aria-pressed={activeId === win.id && !win.minimized} onClick={() => onTask(win.id)} title={title}>
+          <button key={win.id} type="button" className={`task-button ${activeId === win.id && !win.minimized ? 'is-pressed' : ''}`} aria-label={title} aria-pressed={activeId === win.id && !win.minimized} onClick={() => onTask(win.id)} title={title}>
             <OsIcon name={icon} size={16} />
             <span>{title}</span>
           </button>

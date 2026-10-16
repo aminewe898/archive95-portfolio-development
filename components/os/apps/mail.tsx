@@ -17,7 +17,7 @@ export function MailApp({ topic, winId }: { topic?: string; winId: string }) {
     const signed = name.trim() ? `${body}\n\n— ${name.trim()}` : body
     window.location.href = `mailto:${profile.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(signed)}`
     play('ding')
-    message({ title: 'Outlook Express', text: t('Tu programa de correo se abrió con el mensaje listo para enviar.', 'Your mail program was opened with the message ready to send.'), kind: 'info' })
+    message({ title: 'Outlook Express', text: t('Continúa en tu aplicación de correo para enviar el mensaje. Si no se abre, copia la dirección y el mensaje en tu correo habitual.', 'Continue in your mail application to send the message. If nothing opens, copy the address and message into your usual email service.'), kind: 'info' })
   }
 
   const copy = async () => {
@@ -35,7 +35,7 @@ export function MailApp({ topic, winId }: { topic?: string; winId: string }) {
         <div className="toolbar-group">
           <button type="submit" className="big-tool">
             <OsIcon name="mail" size={24} />
-            {t('Enviar', 'Send')}
+            {t('Abrir en correo', 'Open in mail')}
           </button>
           <button type="button" className="big-tool" onClick={copy}>
             <OsIcon name="file" size={24} />
@@ -78,7 +78,8 @@ export function MailApp({ topic, winId }: { topic?: string; winId: string }) {
         placeholder={t('Hola Amine, …', 'Hi Amine, …')}
       />
       <div className="status-bar">
-        <p className="status-bar-field status-grow">● {t('Disponible para puestos junior y prácticas · Reus y alrededores', 'Available for junior roles and internships · Reus and nearby')}</p>
+        <p className="status-bar-field status-grow">{t('Se envía desde tu aplicación de correo', 'Send using your mail application')}</p>
+        <p className="status-bar-field">{body.length}/4000</p>
       </div>
     </form>
   )

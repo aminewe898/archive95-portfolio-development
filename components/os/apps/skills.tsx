@@ -48,7 +48,7 @@ export function SkillsApp() {
         <ul className="file-grid">
           {applets.map((a) => (
             <li key={a.id}>
-              <button type="button" className={`file-icon ${selected === a.id ? 'is-selected' : ''}`} {...gesture(() => setSelected(a.id), () => activate(a))} onKeyDown={(e) => e.key === 'Enter' && activate(a)}>
+              <button type="button" className={`file-icon ${selected === a.id ? 'is-selected' : ''}`} {...gesture(() => setSelected(a.id), () => activate(a))}>
                 <OsIcon name={a.icon} size={32} />
                 <span>{a.name}</span>
               </button>

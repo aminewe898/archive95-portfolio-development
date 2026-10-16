@@ -6,9 +6,11 @@ import { MenuBar } from '../menu-bar'
 import { useOs } from '../os-context'
 
 export function NotepadApp({ blank, winId }: { blank?: boolean; winId: string }) {
-  const { t, close, message } = useOs()
+  const { t, close, message, open } = useOs()
   const ref = useRef<HTMLTextAreaElement>(null)
   const [wrap, setWrap] = useState(true)
+  const [position, setPosition] = useState({ line: 1, column: 1 })
+  const [saved, setSaved] = useState(false)
   const [text, setText] = useState(() =>
     blank
       ? ''
@@ -66,16 +68,39 @@ This file is editable. Go ahead, leave a note.
     if (!el) return setText((v) => v + stamp)
     const { selectionStart: s, selectionEnd: e } = el
     setText((v) => v.slice(0, s) + stamp + v.slice(e))
+    setSaved(false)
+    requestAnimationFrame(() => {
+      el.focus()
+      el.setSelectionRange(s + stamp.length, s + stamp.length)
+    })
+  }
+
+  const save = () => {
+    const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }))
+    const link = document.createElement('a')
+    link.href = url
+    link.download = blank ? 'UNTITLED.TXT' : 'README.TXT'
+    document.body.append(link)
+    link.click()
+    link.remove()
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+    setSaved(true)
   }
 
   return (
-    <div className="app-layout">
+    <div className="app-layout" onKeyDown={(e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault()
+        save()
+      }
+    }}>
       <MenuBar
         menus={[
           {
             label: t('Archivo', 'File'),
             items: [
-              { label: t('Nuevo', 'New'), onSelect: () => setText('') },
+              { label: t('Nuevo', 'New'), onSelect: () => open('notepad', `new-${Date.now()}`) },
+              { label: t('Guardar como…', 'Save As…'), shortcut: 'Ctrl+S', onSelect: save },
               { label: t('Enviar como correo…', 'Send as mail…'), onSelect: () => (window.location.href = `mailto:${profile.email}?subject=README.TXT&body=${encodeURIComponent(text)}`) },
               'separator',
               { label: t('Salir', 'Exit'), onSelect: () => close(winId) },
@@ -106,7 +131,12 @@ This file is editable. Go ahead, leave a note.
         value={text}
         wrap={wrap ? 'soft' : 'off'}
         spellCheck={false}
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e) => { setText(e.target.value); setSaved(false) }}
+        onSelect={(e) => {
+          const before = e.currentTarget.value.slice(0, e.currentTarget.selectionStart)
+          const lines = before.split('\n')
+          setPosition({ line: lines.length, column: lines[lines.length - 1].length + 1 })
+        }}
         onKeyDown={(e) => {
           if (e.key === 'F5') {
             e.preventDefault()
@@ -114,6 +144,11 @@ This file is editable. Go ahead, leave a note.
           }
         }}
       />
+      <div className="status-bar">
+        <p className="status-bar-field status-grow" role="status">{saved ? t('Descarga iniciada', 'Download started') : t('Documento editable · Guarda una copia con Ctrl+S', 'Editable document · Save a copy with Ctrl+S')}</p>
+        <p className="status-bar-field">Ln {position.line}, Col {position.column}</p>
+        <p className="status-bar-field">{text.length} {t('caracteres', 'characters')}</p>
+      </div>
     </div>
   )
 }

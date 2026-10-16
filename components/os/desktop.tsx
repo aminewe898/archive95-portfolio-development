@@ -531,7 +531,7 @@ function DesktopIcons({
                 }
                 handlers.onClick(e)
               }}
-              onKeyDown={(e) => e.key === 'Enter' && onOpen(icon)}
+
             >
               <OsIcon name={icon.icon} size={32} />
               <span>{icon.label}</span>

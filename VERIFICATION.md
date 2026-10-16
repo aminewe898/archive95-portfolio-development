@@ -19,3 +19,13 @@
 - Historical editorial verification from the original v0 export is superseded by this report. No previous accessibility or performance score is claimed for the desktop rewrite.
 
 Production HTTP verification: all 22 routes/assets returned 200; server-rendered identity, contact information, and project links were present. All four project documents had no horizontal scroll overflow at 390 pixels wide.
+
+## App interaction follow-up — 16 October 2026
+
+- TypeScript and the production build passed after the interaction changes.
+- Keyboard checks: app menus move between items and menus with arrow keys; Escape closes the menu. Start-menu Right/Left moves into and out of Programs; Escape returns focus to Start.
+- Notepad Ctrl+S downloaded README.TXT. The downloaded bytes were read back and matched the two-line test document. New opened a separate blank window while preserving the existing note.
+- Mail fields were visually reviewed at desktop and 390px mobile widths. At mobile width, field scroll width equalled client width (384px).
+- The mobile Programs submenu stayed inside the 390px viewport (left 197px, width 180px).
+- Removed duplicate keyboard activation handlers from native icon buttons. Added gesture-listener cleanup when a window unmounts, and horizontal scrolling for crowded taskbars.
+- Email dispatch was not exercised. The form now accurately describes handing off to the visitor's mail application; it does not claim delivery or successful application launch.
