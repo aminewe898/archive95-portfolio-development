@@ -29,3 +29,13 @@ Production HTTP verification: all 22 routes/assets returned 200; server-rendered
 - The mobile Programs submenu stayed inside the 390px viewport (left 197px, width 180px).
 - Removed duplicate keyboard activation handlers from native icon buttons. Added gesture-listener cleanup when a window unmounts, and horizontal scrolling for crowded taskbars.
 - Email dispatch was not exercised. The form now accurately describes handing off to the visitor's mail application; it does not claim delivery or successful application launch.
+
+## Interactive project demos — 16 October 2026
+
+- Production build, TypeScript, and the playback reducer checks passed.
+- Browser tests completed all six steps in both scenarios for each of the four demos (eight runs). Every run reached 100% and reported completion.
+- Each demo passed Run/Pause progress preservation, Reset to 0%, dossier navigation, and a 390px viewport overflow check. No page exceptions were observed during this sequence.
+- An automatic Relay run reached completion at 2x speed and enabled Replay. While minimized, progress remained at 1% across a 500ms observation; restoring the window resumed execution.
+- The local AI response matched the predefined VLAN example. Spanish controls operated correctly. Reduced-motion emulation reported no connector animation.
+- Desktop Relay and AI views and mobile Relay/NAS views were visually inspected. All demos use synthetic data, not live project execution or benchmarks.
+- The existing 98.css and missing-public-origin build warnings remain as documented above.

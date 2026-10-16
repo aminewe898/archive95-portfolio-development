@@ -33,3 +33,16 @@ The full asset build (`pnpm assets`, also run before production builds) generate
 Set `NEXT_PUBLIC_SITE_URL` to the deployment's real HTTPS origin. Vercel's production URL is used as a fallback when available. Without either, the sitemap is empty and metadata uses localhost. The GitHub repository is private; pushing source does not deploy a public website.
 
 See `VERIFICATION.md` for checks and limitations.
+
+## Interactive project demos
+
+Projects open into an interactive demo, with a separate dossier view for the full write-up:
+
+- Relay: n8n-style voice-to-ticket workflow, including a human-review example.
+- Local AI: model loading, a prompt, and a predefined response revealed incrementally.
+- Homelab: an HTTPS request trace and an operator-driven service-restart example.
+- Pi NAS: sample files moving to a shared folder, followed by checksum verification.
+
+All demos are local state machines with sample data. They do not call n8n, AI providers, servers, or storage services. Controls include Run/Pause, Step, Reset, Replay, speed selection, and node inspection. Playback suspends while the window is minimized, the browser tab is hidden, or the screensaver is active; timers are cleaned up on unmount. Reduced-motion preferences disable decorative animation.
+
+The playback reducer has checks for idle, pause, stepping, completion, replay, and reset. Run `pnpm test:demo` with Node.js 22.18+ (tested with Node.js 24).

@@ -8,7 +8,8 @@
     "build": "node scripts/assets.mjs && next build",
     "assets": "node scripts/assets.mjs",
     "typecheck": "tsc --noEmit",
-    "start": "next start"
+    "start": "next start",
+    "test:demo": "node scripts/test-playback.mjs"
   },
   "dependencies": {
     "98.css": "^0.1.21",

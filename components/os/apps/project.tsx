@@ -6,41 +6,12 @@ import { profile, projectPath, projects } from '@/lib/content'
 import { OsIcon } from '../icons'
 import { MenuBar } from '../menu-bar'
 import { useOs } from '../os-context'
+import { ProjectDemo } from '../demos/project-demo'
 
-function RelayDiagram() {
-  const { t } = useOs()
-  const nodes = [
-    { id: 'tg', label: 'Telegram', note: t('Mensajes de voz de usuarios autorizados.', 'Voice messages from authorized users.') },
-    { id: 'in', label: 'Ingress', note: t('Entrada autenticada: valida y encola el trabajo.', 'Authenticated ingress: validates and queues work.') },
-    { id: 'q', label: 'PostgreSQL', note: t('Cola con checkpoints duraderos, leases y fencing.', 'Queue with durable checkpoints, leases and fencing.') },
-    { id: 'w', label: 'n8n + Groq', note: t('Workers: transcripción y extracción estructurada.', 'Workers: transcription and structured extraction.') },
-    { id: 'r', label: t('Resolución', 'Resolution'), note: t('Resolución determinista de clientes y tickets.', 'Deterministic customer and ticket resolution.') },
-    { id: 'o', label: 'Outbox', note: t('Respuestas persistentes; los envíos inciertos se reconcilian.', 'Persistent replies; uncertain sends are reconciled.') },
-  ]
-  const [active, setActive] = useState(0)
-  return (
-    <fieldset className="diagram">
-      <legend>{t('Diagrama de red — haz clic en un nodo', 'Network diagram — click a node')}</legend>
-      <ol className="diagram-flow">
-        {nodes.map((n, i) => (
-          <li key={n.id}>
-            <button type="button" className={`diagram-node ${active === i ? 'is-active' : ''}`} aria-pressed={active === i} onClick={() => setActive(i)}>
-              <span className="diagram-step">{String(i + 1).padStart(2, '0')}</span>
-              {n.label}
-            </button>
-          </li>
-        ))}
-      </ol>
-      <p className="diagram-note" aria-live="polite">
-        <b>{nodes[active].label}:</b> {nodes[active].note}
-      </p>
-    </fieldset>
-  )
-}
-
-export function ProjectViewer({ slug, winId }: { slug: string; winId: string }) {
+export function ProjectViewer({ slug, winId, suspended = false }: { slug: string; winId: string; suspended?: boolean }) {
   const { t, lang, open, close, message } = useOs()
   const [zoom, setZoom] = useState(1)
+  const [view, setView] = useState<'demo' | 'dossier'>('demo')
   const index = Math.max(0, projects.findIndex((p) => p.slug === slug))
   const p = projects[index]
   const prev = projects[(index - 1 + projects.length) % projects.length]
@@ -110,7 +81,12 @@ export function ProjectViewer({ slug, winId }: { slug: string; winId: string }) 
           <button type="button" onClick={copyLink}>{t('Compartir', 'Share')}</button>
         </div>
       </div>
-      <div className="sunken-panel doc-scroll">
+      <div className="project-view-switch" role="group" aria-label={t('Vista del proyecto', 'Project view')}>
+        <button type="button" aria-pressed={view === 'demo'} onClick={() => setView('demo')}><OsIcon name="automation" size={16}/>{t('Demo interactiva', 'Interactive demo')}</button>
+        <button type="button" aria-pressed={view === 'dossier'} onClick={() => setView('dossier')}><OsIcon name="doc" size={16}/>{t('Dossier del proyecto', 'Project dossier')}</button>
+        <span>{t('Explora cómo funciona', 'Explore how it works')}</span>
+      </div>
+      {view === 'demo' ? <div className="demo-scroll"><ProjectDemo key={slug} slug={slug} suspended={suspended}/></div> : <div className="sunken-panel doc-scroll">
         <article className="doc-page" style={{ '--document-zoom': zoom } as React.CSSProperties}>
           <p className="doc-kicker">
             ARCHIVE / {String(index + 1).padStart(2, '0')} · {p.category[lang]}
@@ -126,7 +102,6 @@ export function ProjectViewer({ slug, winId }: { slug: string; winId: string }) 
             <Image src={`/art/retro/${p.illustration}.svg`} unoptimized width={640} height={360} sizes="(max-width: 640px) 90vw, 560px" alt={t(`Ilustración retro de ${p.name.es}`, `Retro illustration of ${p.name.en}`)} />
             <figcaption>{t('Fig. 1 — Ilustración del sistema.', 'Fig. 1 — Conceptual system illustration.')}</figcaption>
           </figure>
-          {p.slug === 'relay' && <RelayDiagram />}
           {p.sections.map((s, i) => (
             <section key={s.title.en} className="doc-section">
               <h2>
@@ -159,12 +134,12 @@ export function ProjectViewer({ slug, winId }: { slug: string; winId: string }) 
             </p>
           </section>
         </article>
-      </div>
+      </div>}
       <div className="status-bar">
         <p className="status-bar-field status-grow">
           {index + 1} / {projects.length} · {p.technologies.length} {t('tecnologías', 'technologies')}
         </p>
-        <p className="status-bar-field">{Math.round(zoom * 100)}%</p>
+        <p className="status-bar-field">{view === 'demo' ? t('Simulación local', 'Local simulation') : `${Math.round(zoom * 100)}%`}</p>
       </div>
     </div>
   )

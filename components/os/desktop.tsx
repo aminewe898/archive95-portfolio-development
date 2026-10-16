@@ -31,7 +31,7 @@ const sizes: Record<AppId, [number, number]> = {
   welcome: [660, 450],
   about: [470, 430],
   projects: [580, 390],
-  project: [780, 650],
+  project: [900, 720],
   resume: [660, 560],
   mail: [540, 440],
   terminal: [620, 390],
@@ -305,7 +305,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
       case 'projects':
         return <ProjectsExplorer winId={w.id} />
       case 'project':
-        return <ProjectViewer key={w.arg} slug={w.arg ?? 'relay'} winId={w.id} />
+        return <ProjectViewer key={w.arg} slug={w.arg ?? 'relay'} winId={w.id} suspended={w.minimized || phase !== 'desktop' || saver} />
       case 'resume':
         return <ResumeApp winId={w.id} />
       case 'mail':
