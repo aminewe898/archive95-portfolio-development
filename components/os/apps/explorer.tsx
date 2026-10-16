@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { projects } from '@/lib/content'
 import { OsIcon, type IconName } from '../icons'
 import { MenuBar } from '../menu-bar'
@@ -8,7 +9,7 @@ import { useOs } from '../os-context'
 import { projectFile } from '../programs'
 import { useOpenGesture } from '../use-open-gesture'
 
-type Item = { id: string; name: string; icon: IconName; type: string; detail: string; status: string; onOpen: () => void }
+type Item = { id: string; name: string; icon: IconName; type: string; detail: string; status: string; preview?: string; onOpen: () => void }
 
 function FileView({ items, address, empty, menus, toolbar, winId }: { items: Item[]; address: string; empty: string; menus?: Parameters<typeof MenuBar>[0]['menus']; toolbar?: React.ReactNode; winId: string }) {
   const { t, close } = useOs()
@@ -49,6 +50,7 @@ function FileView({ items, address, empty, menus, toolbar, winId }: { items: Ite
           {toolbar}
         </div>
       </div>
+      <div className="explorer-content">
       <div className="sunken-panel file-area" onClick={() => setSelected(null)}>
         {items.length === 0 && <p className="file-empty">{empty}</p>}
         {view === 'icons' ? (
@@ -74,7 +76,7 @@ function FileView({ items, address, empty, menus, toolbar, winId }: { items: Ite
               </thead>
               <tbody>
                 {items.map((item) => (
-                  <tr key={item.id} className={selected === item.id ? 'highlighted' : ''} tabIndex={0} {...gesture(() => setSelected(item.id), item.onOpen)} onKeyDown={(e) => e.key === 'Enter' && item.onOpen()}>
+                  <tr key={item.id} className={selected === item.id ? 'highlighted is-selected' : ''} tabIndex={0} {...gesture(() => setSelected(item.id), item.onOpen)} onKeyDown={(e) => e.key === 'Enter' && item.onOpen()}>
                     <td>
                       <span className="cell-name">
                         <OsIcon name={item.icon} size={16} />
@@ -89,6 +91,22 @@ function FileView({ items, address, empty, menus, toolbar, winId }: { items: Ite
             </table>
           )
         )}
+      </div>
+      {items.some(item => item.preview) && (
+        <aside className="file-preview" aria-live="polite">
+          {current?.preview ? <>
+            <Image src={current.preview} width={640} height={360} unoptimized alt={t('Ilustración del sistema seleccionado', 'Illustration of the selected system')} />
+            <b>{current.name}</b>
+            <p>{current.status}</p>
+            <button type="button" onClick={current.onOpen}>{t('Abrir proyecto', 'Open project')} →</button>
+          </> : <>
+            <OsIcon name="folderOpen" size={48} />
+            <b>{t('Dentro del archivo', 'Inside the archive')}</b>
+            <p>{t('Selecciona un archivo para ver el proyecto. Haz doble clic para abrirlo.', 'Select a file to preview the project. Double-click to open it.')}</p>
+            <span>{items.length} {t('proyectos personales', 'personal projects')}</span>
+          </>}
+        </aside>
+      )}
       </div>
       <div className="status-bar">
         <p className="status-bar-field status-grow">{current ? current.status : t(`${items.length} objeto(s)`, `${items.length} object(s)`)}</p>
@@ -107,6 +125,7 @@ export function ProjectsExplorer({ winId }: { winId: string }) {
     type: p.category[lang],
     detail: p.technologies.slice(0, 3).join(', '),
     status: `${p.name[lang]} — ${p.summary[lang]}`,
+    preview: `/art/retro/${p.illustration}.svg`,
     onOpen: () => open('project', p.slug),
   }))
   return <FileView winId={winId} items={items} address={t('C:\\Archive95\\Proyectos', 'C:\\Archive95\\Projects')} empty="" />

@@ -22,14 +22,16 @@ import { Taskbar } from './taskbar'
 import { useOpenGesture } from './use-open-gesture'
 import { WindowFrame as WindowFrameLazy } from './window-frame'
 
+import { readPreference, writePreference } from './storage'
+
 const TASKBAR = 30
 const IDLE_MS = 120_000
 
 const sizes: Record<AppId, [number, number]> = {
-  welcome: [520, 340],
+  welcome: [660, 450],
   about: [470, 430],
   projects: [580, 390],
-  project: [700, 540],
+  project: [780, 650],
   resume: [660, 560],
   mail: [540, 440],
   terminal: [620, 390],
@@ -54,7 +56,7 @@ type ContextMenuState = { x: number; y: number } | null
 export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: { app: AppId; arg?: string } }) {
   const [lang, setLangState] = useState<Lang>(initialLang)
   const [windows, setWindows] = useState<OsWindow[]>([])
-  const [wallpaper, setWallpaperState] = useState<Wallpaper>('clouds')
+  const [wallpaper, setWallpaperState] = useState<Wallpaper>('teal')
   const [soundOn, setSoundOnState] = useState(true)
   const [phase, setPhase] = useState<'desktop' | 'boot' | 'off'>('desktop')
   const [saver, setSaver] = useState(false)
@@ -135,16 +137,16 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
 
   const setWallpaper = useCallback((w: Wallpaper) => {
     setWallpaperState(w)
-    localStorage.setItem('a95-wallpaper', w)
+    writePreference('a95-wallpaper', w)
   }, [])
 
   const setSoundOn = useCallback((on: boolean) => {
     setSoundOnState(on)
-    localStorage.setItem('a95-sound', on ? 'on' : 'off')
+    writePreference('a95-sound', on ? 'on' : 'off')
   }, [])
 
   const openWelcome = useCallback(() => {
-    if (localStorage.getItem('a95-welcome') !== 'off') spawn('welcome')
+    if (readPreference('a95-welcome') !== 'off') spawn('welcome')
   }, [spawn])
 
   const power = useCallback((mode: 'off' | 'restart') => {
@@ -153,22 +155,30 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
   }, [])
 
   const finishBoot = useCallback(() => {
-    sessionStorage.setItem('a95-booted', '1')
+    writePreference('a95-booted', '1', true)
     setPhase('desktop')
     play('chord')
     openWelcome()
   }, [openWelcome, play])
 
   useEffect(() => {
-    const storedWall = localStorage.getItem('a95-wallpaper') as Wallpaper | null
+    const storedWall = readPreference('a95-wallpaper') as Wallpaper | null
     if (storedWall && wallpaperOptions.some((o) => o.id === storedWall)) setWallpaperState(storedWall)
-    if (localStorage.getItem('a95-sound') === 'off') setSoundOnState(false)
+    if (readPreference('a95-sound') === 'off') setSoundOnState(false)
     setViewportH(window.innerHeight)
-    const onResize = () => setViewportH(window.innerHeight)
+    const onResize = () => {
+      setViewportH(window.innerHeight)
+      if (window.innerWidth <= 640) return
+      setWindows(list => list.map(w => {
+        const width = Math.min(w.w, window.innerWidth - 8)
+        const height = Math.min(w.h, window.innerHeight - TASKBAR - 8)
+        return {...w, w: width, h: height, x: Math.max(4, Math.min(w.x, window.innerWidth - width - 4)), y: Math.max(4, Math.min(w.y, window.innerHeight - TASKBAR - height - 4))}
+      }))
+    }
     window.addEventListener('resize', onResize)
 
     if (initial) spawn(initial.app, initial.arg)
-    else if (!sessionStorage.getItem('a95-booted')) setPhase('boot')
+    else if (!readPreference('a95-booted', true)) setPhase('boot')
     else openWelcome()
     return () => window.removeEventListener('resize', onResize)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -191,8 +201,9 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
 
   useEffect(() => {
     const project = topWindow?.app === 'project' ? topWindow.arg : undefined
-    const target = project ? projectPath(lang, project) : homePath(lang)
-    if (window.location.pathname !== target) window.history.replaceState(null, '', target)
+    document.documentElement.lang = lang
+    const target = project ? projectPath(lang, project) : topWindow?.app === 'resume' ? `/cv?lang=${lang}` : homePath(lang)
+    if (window.location.pathname + window.location.search !== target) window.history.replaceState(null, '', target)
     const name = project ? projects.find((p) => p.slug === project)?.name[lang] : undefined
     document.title = name ? `${name} — ${profile.name}` : `${profile.name} — Archive95`
   }, [topWindow?.app, topWindow?.arg, lang])
@@ -352,7 +363,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
           onContextMenu={(e) => {
             if ((e.target as HTMLElement).closest('.os-window')) return
             e.preventDefault()
-            setMenu({ x: Math.min(e.clientX, window.innerWidth - 210), y: Math.min(e.clientY, window.innerHeight - TASKBAR - 230) })
+            setMenu({ x: Math.max(4, Math.min(e.clientX, window.innerWidth - 210)), y: Math.max(4, Math.min(e.clientY, window.innerHeight - TASKBAR - 270)) })
           }}
         >
           <DesktopIcons

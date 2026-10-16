@@ -53,10 +53,12 @@ export function WindowFrame({ win, title, icon, active, resizable, dialog, onFoc
       el.classList.remove('is-dragging')
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup', up)
+      window.removeEventListener('pointercancel', up)
       onCommit({ x, y })
     }
     window.addEventListener('pointermove', move)
     window.addEventListener('pointerup', up)
+    window.addEventListener('pointercancel', up)
   }
 
   function startResize(e: ReactPointerEvent<HTMLDivElement>) {
@@ -78,10 +80,12 @@ export function WindowFrame({ win, title, icon, active, resizable, dialog, onFoc
     const up = () => {
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup', up)
+      window.removeEventListener('pointercancel', up)
       onCommit({ w, h })
     }
     window.addEventListener('pointermove', move)
     window.addEventListener('pointerup', up)
+    window.addEventListener('pointercancel', up)
   }
 
   return (
@@ -93,6 +97,7 @@ export function WindowFrame({ win, title, icon, active, resizable, dialog, onFoc
       className={`window os-window ${win.maximized ? 'is-maximized' : ''} ${dialog ? 'is-dialog' : ''}`}
       style={{ left: win.x, top: win.y, width: win.w, height: win.h, zIndex: win.z, display: win.minimized ? 'none' : undefined }}
       onPointerDownCapture={onFocus}
+      onFocusCapture={onFocus}
       onKeyDown={(e) => {
         if (e.key === 'Escape' && dialog) onClose()
       }}

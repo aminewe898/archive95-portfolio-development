@@ -21,3 +21,7 @@ archive95-desktop.png
 .env
 .env.*
 !.env.example
+
+# Visual review captures
+before-polish.png
+polish-*.png

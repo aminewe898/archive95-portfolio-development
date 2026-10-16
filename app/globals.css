@@ -57,7 +57,7 @@ img { image-rendering: pixelated; }
 .desktop-icon.is-selected img { filter: brightness(.6) sepia(1) hue-rotate(190deg) saturate(4); }
 
 /* ---------- windows ---------- */
-.os-window { position: absolute; display: flex; flex-direction: column; padding: 3px; min-width: 0; animation: win-open .14s steps(3); }
+.os-window { position: absolute; display: flex; flex-direction: column; padding: 3px; min-width: 0; background: var(--face); animation: win-open .14s steps(3); }
 .os-window.is-dragging { opacity: .92; }
 .os-window.is-maximized { left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; }
 .os-window .title-bar { flex-shrink: 0; cursor: default; touch-action: none; }
@@ -356,4 +356,82 @@ img { image-rendering: pixelated; }
   .os-window { position: static !important; width: auto !important; height: auto !important; box-shadow: none; padding: 0; }
   .doc-desk, .doc-scroll { overflow: visible; background: #fff; box-shadow: none; padding: 0; }
   .doc-page { box-shadow: none; max-width: none; padding: 0; }
+}
+
+/* Desktop polish: crisp chrome, readable documents, and a compact launch screen. */
+.os-window .title-bar { background: var(--navy); }
+.os-window .title-bar.inactive { background: #808080; }
+.desktop-icon > svg { filter: drop-shadow(1px 1px 0 rgba(0,0,0,.25)); }
+.desktop-icon.is-selected > svg, .file-icon.is-selected > svg { filter: brightness(.7) sepia(.4) hue-rotate(170deg); }
+.desktop-icon span { max-width: 100%; }
+.desktop-icon:focus-visible span, .file-icon:focus-visible span { outline: 1px dotted currentColor; outline-offset: 2px; }
+.welcome { gap: 10px; padding: 12px; overflow: auto; }
+.welcome-head { display: block; flex-shrink: 0; }
+.welcome-title { margin: 0; line-height: 1.1; font-size: 27px; }
+.welcome-sub { margin: 6px 0 0; font: 11px/1.4 'Pixelated MS Sans Serif', Arial, sans-serif; }
+.welcome-art { height: 145px; position: relative; flex-shrink: 0; overflow: hidden; border: 1px solid #808080; background: #14213c; }
+.welcome-art img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 45%; }
+.welcome-art > span { position: absolute; bottom: 0; left: 0; right: 0; background: #000080; color: #fff; padding: 5px 8px; font: 10px/1.2 'Courier New', monospace; letter-spacing: 1px; }
+.welcome-main { min-height: 140px; }
+.welcome-tip { flex-direction: row; align-items: flex-start; font-size: 12px; padding: 12px; }
+.welcome-tip > svg { flex-shrink: 0; }
+.welcome-tip-title { margin-bottom: 6px; }
+.welcome-buttons { width: 150px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.welcome-buttons button { min-width: 0; padding: 4px; font-size: 11px; }
+.welcome-buttons button:first-child, .welcome-buttons button:nth-child(2) { grid-column: 1 / -1; }
+.welcome-buttons hr { display: none; }
+.welcome-foot { justify-content: flex-start; flex-wrap: nowrap; }
+.welcome-foot label { line-height: 1.35; }
+.doc-page { font-size: 14px; line-height: 1.6; }
+.doc-page[style] { font-size: calc(14px * var(--document-zoom, 1)) !important; }
+.doc-title { font-size: 2.25em; }
+.doc-page .doc-figure img { display: block; width: 100%; height: auto; border: 1px solid #14213c; }
+.doc-figure figcaption { font: 10px/1.5 'Courier New', monospace; }
+.doc-kicker { font: 10px/1.4 'Courier New', monospace; letter-spacing: 1px; }
+.doc-section h2 { font-size: 15px; }
+.doc-section h2 > span { color: #008080; font: 12px 'Courier New', monospace; margin-right: 5px; }
+.diagram { border: 0; min-width: 0; padding-top: 6px; }
+.diagram legend { background: #000080; padding: 5px 8px; font-size: 11px; }
+.diagram-flow { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.diagram-node { width: 100%; height: 100%; text-align: left; min-width: 0; padding: 7px; font-size: 11px; }
+.diagram-step { font: bold 10px 'Courier New', monospace; margin-bottom: 4px; color: #444; }
+.diagram-node.is-active { background: #ffffc5; outline: 1px dotted #000; outline-offset: -5px; }
+.diagram-note { min-height: 45px; line-height: 1.5; color: #fff; }
+.file-area { padding: 10px; }
+.file-grid { gap: 14px 10px; }
+.file-icon { width: 110px; padding: 10px 4px; gap: 8px; }
+.file-table tr:focus { outline: 1px dotted #000; outline-offset: -2px; }
+.toolbar > .address { flex: 1; min-width: 160px; }
+.os-window .status-bar-field { font-size: 10px; }
+@media (max-width: 640px) {
+  .welcome-art { height: 170px; }
+  .welcome-main { flex: initial; }
+  .welcome-tip { min-height: 105px; overflow: visible; }
+  .welcome-buttons { width: 100%; grid-template-columns: 1fr 1fr; }
+  .welcome-buttons button { min-height: 32px; }
+  .welcome-buttons button:first-child, .welcome-buttons button:nth-child(2) { grid-column: auto; }
+  .welcome-foot { margin-top: auto; padding-bottom: 4px; }
+  .doc-page { padding: 20px 16px; }
+  .doc-title { font-size: 1.9em; }
+  .diagram-flow { grid-template-columns: repeat(2, 1fr); }
+  .os-window.is-dialog .dialog-layout { overflow: auto; }
+}
+@media (max-height: 550px) {
+  .welcome-art { height: 95px; }
+  .welcome-main { flex: 0 0 auto; }
+}
+@media print {
+  .doc-page[style] { font-size: 11pt !important; }
+}
+.explorer-content { flex: 1; min-height: 0; display: flex; }
+.explorer-content .file-area { flex: 1; min-width: 0; }
+.file-preview { width: 195px; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 12px; overflow: auto; background: #ffffe1; border: 1px solid #808080; margin: 0 2px; font: 11px/1.5 'Pixelated MS Sans Serif', Arial, sans-serif; }
+.file-preview img { width: 100%; height: auto; }
+.file-preview > span { margin-top: auto; color: #555; }
+.file-preview > button { margin-top: auto; }
+@media (max-width: 640px) {
+  .explorer-content { flex-direction: column; }
+  .file-preview { width: auto; max-height: 45%; flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .file-preview img { width: 115px; }
+  .file-preview p { flex: 1 1 160px; }
 }

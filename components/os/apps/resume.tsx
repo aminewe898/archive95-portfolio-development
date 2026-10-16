@@ -55,7 +55,7 @@ export function ResumeApp({ winId }: { winId: string }) {
       </div>
       <div className="ruler" aria-hidden="true" />
       <div className="sunken-panel doc-scroll doc-desk">
-        <article className="doc-page resume-paper" style={{ fontSize: `${zoom}em` }} lang={lang}>
+        <article className="doc-page resume-paper" style={{ '--document-zoom': zoom } as React.CSSProperties} lang={lang}>
           <header className="resume-head">
             <h1 className="doc-title">{profile.name}</h1>
             <p className="resume-role">

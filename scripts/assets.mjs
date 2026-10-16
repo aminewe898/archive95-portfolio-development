@@ -41,3 +41,5 @@ line('Arabic native | Spanish B2 | Catalan B1 | English C1 | French A2')
 pdf.setTitle('Mohamed Amine Aslimani - CV');pdf.setAuthor('Mohamed Amine Aslimani')
 await writeFile('public/assets/cv-mohamed-amine-aslimani.pdf',await pdf.save())
 console.log('Artwork optimized, font licenses copied, factual CV PDF generated.')
+
+await import('./retro-assets.mjs')

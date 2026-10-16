@@ -1,7 +1,13 @@
 import { profile, projects } from '@/lib/content'
 import type { AppId } from './os-context'
 
-export const projectFile = (slug: string) => (slug === 'relay' ? 'RELAY.EXE' : `${slug.toUpperCase().replace(/-/g, '_').slice(0, 12)}.DOC`)
+const projectFiles: Record<string, string> = {
+  relay: 'RELAY.EXE',
+  'local-ai-server': 'LOCAL_AI.DOC',
+  'homelab-cloud': 'HOMELAB.DOC',
+  'raspberry-pi-nas': 'PI_NAS.DOC',
+}
+export const projectFile = (slug: string) => projectFiles[slug] ?? `${slug.toUpperCase().replace(/-/g, '_').slice(0, 8)}.DOC`
 
 export type Program = { app: AppId; arg?: string } | { url: string }
 
@@ -39,7 +45,7 @@ const aliases: Record<string, AppId> = {
 }
 
 export function resolveProgram(input: string): Program | null {
-  const name = input.trim().toLowerCase().replace(/^[a-z]:\\.*\\/, '').replace(/\.exe$/, '')
+  const name = input.trim().toLowerCase().replace(/^[a-z]:\\.*\\/, '').replace(/\.(exe|doc)$/, '')
   if (!name) return null
   if (name === 'github' || name.startsWith('http')) return { url: name.startsWith('http') ? input.trim() : profile.github }
   if (aliases[name]) return { app: aliases[name] }

@@ -1,33 +1,35 @@
-> Recovery update — 16 October 2026: The active UI is now the Windows 95 desktop in `components/os`. Both homepages, localized project routes, and the CV route load it. The editorial implementation remains in the source as previous work. Descriptions and test results below concern that previous version unless explicitly stated otherwise.
 # Archive95
 
-Bilingual portfolio for Mohamed Amine Aslimani. Next.js App Router, React, TypeScript, Tailwind CSS 4 and Motion. No database, authentication, runtime AI, analytics, or contact backend.
+A bilingual, interactive Windows 95 desktop portfolio for Mohamed Amine Aslimani. Built with Next.js, React, TypeScript, 98.css, and React95 icons.
 
-## Installation and deployment
+## Run locally
 
-Import the project through GitHub or the v0 shadcn CLI installation option. The repository uses pnpm 12.3.4 and includes its lockfile. The development script is `dev`; the production script is `build`, followed by `start`. Asset generation runs before every production build. `pnpm typecheck` checks TypeScript; `node scripts/verify.mjs` checks a running production server (default port 3001; override with `VERIFY_ORIGIN`).
+```sh
+pnpm install --frozen-lockfile
+pnpm dev
+```
 
-Set `NEXT_PUBLIC_SITE_URL` to the real HTTPS origin before a non-Vercel production build. On Vercel, the production project URL is used automatically when available. No invented domain is used. Without a configured URL, sitemap output is intentionally empty; Next.js may use localhost as its metadata fallback. Rebuild after configuring the origin. Publishing and domain changes have not been performed.
+Production: `pnpm build`, then `pnpm start`. Type checking: `pnpm typecheck`.
 
-## Content
+## Explore
 
-`lib/content.ts` is the typed source for profile, translations, project descriptions, evidence links, skills, languages, chronology, and artwork paths. Homepages are `/` and `/en`; all four case studies have equivalent Spanish and English routes. `/cv?lang=es` and `/cv?lang=en` render printable CVs. The generated downloadable PDF is newly typeset in English, not a preserved original.
+- Spanish desktop: `/`; English desktop: `/en`.
+- Projects open in document windows, with direct links under `/projects/[slug]` and `/en/projects/[slug]`.
+- CV: `/cv?lang=es` or `/cv?lang=en`, with printing and an English PDF download.
+- Start menu, draggable and resizable windows, taskbar, project previews, MS-DOS terminal, editable Notepad, Minesweeper, display settings, and boot/shutdown screens.
+- On mobile, apps fill the desktop and icons open with a tap. On desktop, double-click or keyboard activation opens an icon.
+- Wallpaper, sound, and welcome preferences are stored locally when browser storage is available. No account, database, or contact backend is required. Email opens the visitor's mail application.
 
-Only the explicitly requested language preference is stored in localStorage. Access failure is caught, and explicit routes always win. Motion settings are session-only. Normal project, contact, CV and language links do not need JavaScript; dossier windows are optional enhancements below which the same material is available as ordinary pages. Dossiers are disabled below 900px.
+## Content and artwork
 
-## Fonts and asset provenance
+`lib/content.ts` contains the profile and project content. The active desktop lives in `components/os`.
 
-- Libre Caslon Display, regular Latin: self-hosted from `@fontsource/libre-caslon-display`, SIL Open Font License. License: `/assets/libre-caslon-display-LICENSE.txt`.
-- Source Sans 3, Latin 400/500/600: self-hosted from `@fontsource/source-sans-3`, SIL Open Font License. License: `/assets/source-sans-3-LICENSE.txt`.
-- Tahoma/system fallbacks for retro controls; system monospace for metadata.
-- Tower and supporting specimens: original AI-generated conceptual engravings created for this project, stored locally. `scripts/assets.mjs` produces optimized WebP versions and crops the four supporting specimens. They are illustrations, not project screenshots. These are raster engravings, **not the independently editable layered SVG artwork requested in the original brief**.
-- Social image: generated locally from the tower illustration and a project-owned SVG typography overlay.
-- Favicon: original simple SVG monogram. Interface icons: lucide-react (ISC license).
-- Paper texture: small inline SVG noise tile, static and not animated.
+`public/art/retro` contains five original, editable SVG illustrations with a coordinated navy, teal, and cream palette. Run `node scripts/retro-assets.mjs` to regenerate them, the favicon, and the social preview. They are conceptual illustrations, not screenshots or evidence of measured project performance.
 
-## Operational notes
+The full asset build (`pnpm assets`, also run before production builds) generates the downloadable English CV and artwork. Historical editorial components and source artwork remain available in the repository; the desktop uses the new retro illustrations. Interface icons come from `@react95/icons`, and classic control styling and fonts come from `98.css`.
 
-The build generates `/assets/cv-mohamed-amine-aslimani.pdf`, artwork derivatives, social artwork and font-license copies. Keep the source PNG files available for that step. Only optimized WebP assets are loaded by the site. Email uses the visitor’s mail application; clipboard errors leave the address selectable. The portfolio makes no independent claim of having tested Relay’s live providers or full Docker/database integration.
+## Deployment
 
-See `VERIFICATION.md` for actual checks and remaining limitations. Browser captures are saved outside the codebase under `/tmp/agent-browser/`; these are workspace review artifacts, not public website routes.
+Set `NEXT_PUBLIC_SITE_URL` to the deployment's real HTTPS origin. Vercel's production URL is used as a fallback when available. Without either, the sitemap is empty and metadata uses localhost. The GitHub repository is private; pushing source does not deploy a public website.
 
+See `VERIFICATION.md` for checks and limitations.

@@ -1,5 +1,7 @@
 'use client'
 
+import Image from 'next/image'
+import { readPreference, writePreference } from '../storage'
 import { useState } from 'react'
 import { profile } from '@/lib/content'
 import { OsIcon } from '../icons'
@@ -8,7 +10,7 @@ import { useOs } from '../os-context'
 export function WelcomeApp({ winId }: { winId: string }) {
   const { t, open, close, lang } = useOs()
   const [tip, setTip] = useState(0)
-  const [showNext, setShowNext] = useState(() => typeof window === 'undefined' || localStorage.getItem('a95-welcome') !== 'off')
+  const [showNext, setShowNext] = useState(() => typeof window === 'undefined' || readPreference('a95-welcome') !== 'off')
 
   const tips = [
     t(
@@ -34,11 +36,12 @@ export function WelcomeApp({ winId }: { winId: string }) {
           {profile.name} — {profile.role[lang]}
         </p>
       </div>
+      <div className="welcome-art"><Image src="/art/retro/welcome.svg" width={640} height={360} unoptimized priority alt={t('Ordenador retro, servidor y disquete en pixel art', 'Pixel-style retro computer, server and floppy disk')} /><span>{t('SISTEMAS · REDES · AUTOMATIZACIÓN', 'SYSTEMS · NETWORKS · AUTOMATION')}</span></div>
       <div className="welcome-main">
         <div className="welcome-tip">
           <OsIcon name="help" size={32} />
           <div>
-            <p className="welcome-tip-title">{t('¿Sabías que…', 'Did you know…')}</p>
+            <p className="welcome-tip-title">{tip === 0 ? t('Hola, soy Amine.', 'Hi, I’m Amine.') : t('¿Sabías que…', 'Did you know…')}</p>
             <p aria-live="polite">{tips[tip]}</p>
           </div>
         </div>
@@ -48,7 +51,7 @@ export function WelcomeApp({ winId }: { winId: string }) {
           <button type="button" onClick={() => open('resume')}>{t('Abrir CV', 'Open resume')}</button>
           <button type="button" onClick={() => open('mail')}>{t('Contactar', 'Get in touch')}</button>
           <hr />
-          <button type="button" onClick={() => setTip((tip + 1) % tips.length)}>{t('Siguiente consejo', 'Next tip')}</button>
+          <button type="button" onClick={() => setTip((tip + 1) % tips.length)}>{t('Consejo', 'Tip')} {tip + 1}/{tips.length} →</button>
           <button type="button" onClick={() => close(winId)}>{t('Cerrar', 'Close')}</button>
         </div>
       </div>
@@ -59,7 +62,7 @@ export function WelcomeApp({ winId }: { winId: string }) {
           checked={showNext}
           onChange={(e) => {
             setShowNext(e.target.checked)
-            localStorage.setItem('a95-welcome', e.target.checked ? 'on' : 'off')
+            writePreference('a95-welcome', e.target.checked ? 'on' : 'off')
           }}
         />
         <label htmlFor="welcome-next">{t('Mostrar esta pantalla de bienvenida la próxima vez', 'Show this Welcome Screen next time')}</label>

@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useState } from 'react'
-import { artwork, profile, projectPath, projects } from '@/lib/content'
+import { profile, projectPath, projects } from '@/lib/content'
 import { OsIcon } from '../icons'
 import { MenuBar } from '../menu-bar'
 import { useOs } from '../os-context'
@@ -111,9 +111,9 @@ export function ProjectViewer({ slug, winId }: { slug: string; winId: string }) 
         </div>
       </div>
       <div className="sunken-panel doc-scroll">
-        <article className="doc-page" style={{ fontSize: `${zoom}em` }}>
+        <article className="doc-page" style={{ '--document-zoom': zoom } as React.CSSProperties}>
           <p className="doc-kicker">
-            SPECIMEN {String(index + 1).padStart(2, '0')} · {p.category[lang]}
+            ARCHIVE / {String(index + 1).padStart(2, '0')} · {p.category[lang]}
           </p>
           <h1 className="doc-title">{p.name[lang]}</h1>
           <p className="doc-lead">{p.summary[lang]}</p>
@@ -123,8 +123,8 @@ export function ProjectViewer({ slug, winId }: { slug: string; winId: string }) 
             ))}
           </ul>
           <figure className="doc-figure">
-            <Image src={artwork[p.illustration as keyof typeof artwork]} width={700} height={467} sizes="(max-width: 640px) 90vw, 560px" alt={t(`Grabado conceptual de ${p.name.es}`, `Conceptual engraving of ${p.name.en}`)} />
-            <figcaption>{t('Fig. 1 — Grabado conceptual. No es una captura de pantalla.', 'Fig. 1 — Conceptual engraving. Not a screenshot.')}</figcaption>
+            <Image src={`/art/retro/${p.illustration}.svg`} unoptimized width={640} height={360} sizes="(max-width: 640px) 90vw, 560px" alt={t(`Ilustración retro de ${p.name.es}`, `Retro illustration of ${p.name.en}`)} />
+            <figcaption>{t('Fig. 1 — Ilustración del sistema.', 'Fig. 1 — Conceptual system illustration.')}</figcaption>
           </figure>
           {p.slug === 'relay' && <RelayDiagram />}
           {p.sections.map((s, i) => (
