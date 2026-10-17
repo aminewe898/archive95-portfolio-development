@@ -1,7 +1,7 @@
 export type Lang = 'es' | 'en'
 export type Localized = Record<Lang, string>
 export const text = (lang: Lang, es: string, en: string) => lang === 'es' ? es : en
-export const profile = { name: 'Mohamed Amine Aslimani', email: 'aslimani923@gmail.com', github: 'https://github.com/aminewe898', location: 'Reus, España', role: { es: 'Técnico junior en sistemas y redes', en: 'Junior systems & network technician' } }
+export const profile = { name: 'Mohamed Amine Aslimani', email: 'anaslimani923@gmail.com', github: 'https://github.com/aminewe898', location: 'Reus, España', role: { es: 'Técnico junior en sistemas y redes', en: 'Junior systems & network technician' } }
 export const navigation = [ ['projects', 'Proyectos', 'Projects'], ['about', 'Sobre mí', 'About'], ['experience', 'Trayectoria', 'Experience'], ['skills', 'Competencias', 'Skills'], ['contact', 'Contacto', 'Contact'] ] as const
 export type Project = { slug: string; name: Localized; category: Localized; summary: Localized; technologies: string[]; illustration: string; sections: { title: Localized; body: Localized }[]; evidence?: { label: Localized; url: string }[] }
 export const projects: Project[] = [

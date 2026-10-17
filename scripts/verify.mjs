@@ -4,7 +4,7 @@ const slugs = ['relay','local-ai-server','homelab-cloud','raspberry-pi-nas']
 const paths = ['/','/en','/cv','/cv?lang=en',...slugs.flatMap(s=>[`/projects/${s}`,`/en/projects/${s}`]),'/assets/cv-mohamed-amine-aslimani.pdf','/robots.txt','/sitemap.xml','/icon.svg','/art/social.webp',...['welcome','relay','ai','lab','nas'].map(s=>`/art/retro/${s}.svg`)]
 for(const path of paths){const response=await fetch(origin+path);if(!response.ok)throw new Error(`${path}: ${response.status}`);console.log(`${response.status} ${path}`)}
 const response=await fetch(origin);const html=await response.text()
-for(const expected of ['Mohamed','Amine','Aslimani','aslimani923@gmail.com',...slugs])if(!html.includes(expected))throw new Error(`Server HTML missing ${expected}`)
+for(const expected of ['Mohamed','Amine','Aslimani','anaslimani923@gmail.com',...slugs])if(!html.includes(expected))throw new Error(`Server HTML missing ${expected}`)
 console.log('Core content and all project links are present in server HTML before JavaScript.')
 console.log('Response headers:',response.headers.get('x-content-type-options'),response.headers.get('referrer-policy'))
 const assets=new Set([...html.matchAll(/(?:src|href)="([^"?#]+\.(?:js|css))"/g)].map(m=>m[1]))

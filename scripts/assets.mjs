@@ -14,7 +14,7 @@ const page = pdf.addPage([595,842]); const regular=await pdf.embedFont(StandardF
 page.drawRectangle({x:0,y:0,width:595,height:842,color:rgb(.94,.90,.82)})
 let y=785
 const line=(text,size=11,isBold=false)=>{page.drawText(text,{x:48,y,size,font:isBold?bold:regular,color:rgb(.15,.16,.13)});y-=size+9}
-line('MOHAMED AMINE ASLIMANI',24,true);line('Junior systems and network technician',15);line('Reus, Spain | Junior roles and internships');line('aslimani923@gmail.com | github.com/aminewe898');y-=12
+line('MOHAMED AMINE ASLIMANI',24,true);line('Junior systems and network technician',15);line('Reus, Spain | Junior roles and internships');line('anaslimani923@gmail.com | github.com/aminewe898');y-=12
 line('PROFILE',13,true)
 line('Systems, automation and infrastructure labs, with practical repair experience.')
 line('Interested in junior systems, networking and AI infrastructure opportunities.');y-=10
