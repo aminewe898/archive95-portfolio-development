@@ -14,8 +14,8 @@ export function WelcomeApp({ winId }: { winId: string }) {
 
   const tips = [
     t(
-      `${profile.name} es técnico junior en sistemas y redes en Reus. Está disponible para puestos junior y prácticas.`,
-      `${profile.name} is a junior systems & network technician in Reus, Spain. Available for junior roles and internships.`,
+      `Soy Amine, técnico junior en sistemas y redes en Reus. Me gusta entender por qué fallan las cosas y construir sistemas que pueda explicar. Busco oportunidades junior y prácticas.`,
+      `I’m Amine, a junior systems & network technician in Reus, Spain. I like understanding why things break and building systems I can explain. I’m looking for junior roles and internships.`,
     ),
     t('Haz doble clic en RELAY.EXE para abrir el proyecto principal: un service desk autoalojado que convierte notas de voz en tickets.', 'Double-click RELAY.EXE to open the flagship project: a self-hosted service desk that turns voice notes into tickets.'),
     t('Abre el MS-DOS Prompt y escribe HELP. Todo el portfolio se puede recorrer desde la línea de comandos.', 'Open the MS-DOS Prompt and type HELP. The whole portfolio can be explored from the command line.'),
@@ -46,15 +46,15 @@ export function WelcomeApp({ winId }: { winId: string }) {
           </div>
         </div>
         <div className="welcome-buttons">
-          <button type="button" onClick={() => open('projects')}>{t('Ver proyectos', 'View projects')}</button>
-          <button type="button" onClick={() => open('project', 'relay')}>RELAY.EXE</button>
-          <button type="button" onClick={() => open('resume')}>{t('Abrir CV', 'Open resume')}</button>
-          <button type="button" onClick={() => open('mail')}>{t('Contactar', 'Get in touch')}</button>
+          <button type="button" onClick={() => open('projects')}>{t('Explorar mi trabajo', 'Explore my work')}</button>
+          <button type="button" onClick={() => open('about')}>{t('Sobre mí', 'About me')}</button>
+          <button type="button" onClick={() => open('mail')}>{t('Contacto', 'Contact')}</button>
           <hr />
           <button type="button" onClick={() => setTip((tip + 1) % tips.length)}>{t('Consejo', 'Tip')} {tip + 1}/{tips.length} →</button>
           <button type="button" onClick={() => close(winId)}>{t('Cerrar', 'Close')}</button>
         </div>
       </div>
+      <p className="welcome-shortcuts">F1: {t('Bienvenida', 'Welcome')} · Alt+P: {t('Proyectos', 'Projects')} · Alt+M: {t('Silenciar', 'Mute')}</p>
       <div className="field-row welcome-foot">
         <input
           id="welcome-next"

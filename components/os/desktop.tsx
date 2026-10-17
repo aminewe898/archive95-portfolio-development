@@ -16,7 +16,7 @@ import { WelcomeApp } from './apps/welcome'
 import { BootScreen, OffScreen, Screensaver } from './boot'
 import { OsIcon, type IconName } from './icons'
 import { OsContext, windowId, type AppId, type MessageSpec, type OsApi, type OsWindow, type Wallpaper } from './os-context'
-import { projectFile } from './programs'
+import { projectAppName, projectIcon } from './programs'
 import { playSound, type SoundName } from './sound'
 import { Taskbar } from './taskbar'
 import { useOpenGesture } from './use-open-gesture'
@@ -28,7 +28,7 @@ const TASKBAR = 30
 const IDLE_MS = 120_000
 
 const sizes: Record<AppId, [number, number]> = {
-  welcome: [660, 450],
+  welcome: [660, 490],
   about: [470, 430],
   projects: [580, 390],
   project: [900, 720],
@@ -57,7 +57,15 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
   const [lang, setLangState] = useState<Lang>(initialLang)
   const [windows, setWindows] = useState<OsWindow[]>([])
   const [wallpaper, setWallpaperState] = useState<Wallpaper>('teal')
-  const [soundOn, setSoundOnState] = useState(true)
+  const [soundOn, setSoundOnState] = useState(false)
+  const [volume, setVolumeState] = useState(0.5)
+  const volumeRef = useRef(volume)
+  volumeRef.current = volume
+  const setVolume = useCallback((value: number) => {
+    const next = Math.max(0, Math.min(1, value))
+    setVolumeState(next)
+    writePreference('a95-volume', String(next))
+  }, [])
   const [phase, setPhase] = useState<'desktop' | 'boot' | 'off'>('desktop')
   const [saver, setSaver] = useState(false)
   const [recycleEmptied, setRecycleEmptied] = useState(false)
@@ -72,7 +80,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
   soundRef.current = soundOn
 
   const t = useCallback((es: string, en: string) => (lang === 'es' ? es : en), [lang])
-  const play = useCallback((name: SoundName) => soundRef.current && playSound(name), [])
+  const play = useCallback((name: SoundName) => soundRef.current && playSound(name, volumeRef.current), [])
 
   const topWindow = useMemo(() => windows.filter((w) => !w.minimized).sort((a, b) => b.z - a.z)[0], [windows])
   const activeId = topWindow?.id ?? null
@@ -164,7 +172,9 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
   useEffect(() => {
     const storedWall = readPreference('a95-wallpaper') as Wallpaper | null
     if (storedWall && wallpaperOptions.some((o) => o.id === storedWall)) setWallpaperState(storedWall)
-    if (readPreference('a95-sound') === 'off') setSoundOnState(false)
+    setSoundOnState(readPreference('a95-sound') === 'on')
+    const storedVolume = readPreference('a95-volume')
+    if (storedVolume !== null && Number.isFinite(Number(storedVolume))) setVolumeState(Math.max(0, Math.min(1, Number(storedVolume))))
     setViewportH(window.innerHeight)
     const onResize = () => {
       setViewportH(window.innerHeight)
@@ -222,6 +232,19 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
     }
   }, [menu])
 
+  useEffect(() => {
+    const shortcut = (event: KeyboardEvent) => {
+      if (phase !== 'desktop' || saver || event.repeat || event.ctrlKey || event.metaKey) return
+      const target = event.target as HTMLElement
+      if (target.closest('input, textarea, select, [contenteditable="true"]')) return
+      if (event.key === 'F1') { event.preventDefault(); open('welcome') }
+      if (event.altKey && event.code === 'KeyP') { event.preventDefault(); open('projects') }
+      if (event.altKey && event.code === 'KeyM') { event.preventDefault(); setSoundOn(!soundRef.current) }
+    }
+    window.addEventListener('keydown', shortcut)
+    return () => window.removeEventListener('keydown', shortcut)
+  }, [open, phase, saver, setSoundOn])
+
   const api: OsApi = useMemo(
     () => ({
       lang,
@@ -231,6 +254,8 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
       message,
       wallpaper,
       setWallpaper,
+      volume,
+      setVolume,
       soundOn,
       setSoundOn,
       play,
@@ -243,7 +268,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
         setRecycleEmptied(true)
       },
     }),
-    [lang, t, open, close, message, wallpaper, setWallpaper, soundOn, setSoundOn, play, setLang, power, recycleEmptied],
+    [lang, t, open, close, message, wallpaper, setWallpaper, volume, setVolume, soundOn, setSoundOn, play, setLang, power, recycleEmptied],
   )
 
   const icons: DesktopIcon[] = [
@@ -268,8 +293,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
       case 'projects':
         return { title: t('Proyectos', 'Projects'), icon: 'folderOpen' }
       case 'project': {
-        const p = projects.find((x) => x.slug === w.arg)
-        return { title: `${projectFile(w.arg ?? '')} — ${p?.name[lang] ?? ''}`, icon: w.arg === 'relay' ? 'automation' : 'doc' }
+        return { title: projectAppName(w.arg ?? ''), icon: projectIcon(w.arg ?? '') }
       }
       case 'resume':
         return { title: 'RESUME.DOC — WordPad', icon: 'doc' }

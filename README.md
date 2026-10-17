@@ -46,3 +46,9 @@ Projects open into an interactive demo, with a separate dossier view for the ful
 All demos are local state machines with sample data. They do not call n8n, AI providers, servers, or storage services. Controls include Run/Pause, Step, Reset, Replay, speed selection, and node inspection. Playback suspends while the window is minimized, the browser tab is hidden, or the screensaver is active; timers are cleaned up on unmount. Reduced-motion preferences disable decorative animation.
 
 The playback reducer has checks for idle, pause, stepping, completion, replay, and reset. Run `pnpm test:demo` with Node.js 22.18+ (tested with Node.js 24).
+
+## Project playgrounds
+
+Relay now supports pointer and arrow-key node movement, an explicit ticket/clarification branch, a sample JSON inspector, and voice-to-reply story cards. Local AI offers two runnable canned prompts. The homelab has selectable machines and stop/restart controls with dependent health feedback. NAS sample files can be dragged between folders or moved using selection buttons on touch and keyboard devices. Guided traces remain separate illustrative examples.
+
+Every demo includes the project scope, lessons, and available evidence links. No actual project screenshots were supplied or found in Relay's public repository; conceptual illustrations are not presented as screenshots. The welcome screen prioritizes work, biography, and contact. Sound starts muted, with persisted volume and a test control in the tray. Keyboard shortcuts: F1 welcome, Alt+P projects, Alt+M mute (ignored while editing form fields).

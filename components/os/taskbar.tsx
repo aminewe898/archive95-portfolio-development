@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { projectIcon } from './programs'
 import { profile, projects } from '@/lib/content'
 import { OsIcon, type IconName } from './icons'
 import { useOs, type AppId, type OsWindow } from './os-context'
@@ -109,17 +110,18 @@ function StartMenu({ entries, onClose }: { entries: StartEntry[]; onClose: () =>
 export function Taskbar({ tasks, activeId, onTask }: { tasks: TaskItem[]; activeId: string | null; onTask: (id: string) => void }) {
   const os = useOs()
   const { t, lang } = os
+  const [volumeOpen, setVolumeOpen] = useState(false)
   const [startOpen, setStartOpen] = useState(false)
   const barRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!startOpen) return
+    if (!startOpen && !volumeOpen) return
     const close = (e: PointerEvent) => {
-      if (!barRef.current?.contains(e.target as Node)) setStartOpen(false)
+      if (!barRef.current?.contains(e.target as Node)) { setStartOpen(false); setVolumeOpen(false) }
     }
     window.addEventListener('pointerdown', close)
     return () => window.removeEventListener('pointerdown', close)
-  }, [startOpen])
+  }, [startOpen, volumeOpen])
 
   const go = (app: AppId, arg?: string) => () => os.open(app, arg)
   const entries: StartEntry[] = [
@@ -138,7 +140,7 @@ export function Taskbar({ tasks, activeId, onTask }: { tasks: TaskItem[]; active
       label: t('Documentos', 'Documents'),
       icon: 'file',
       children: [
-        ...projects.map((p) => ({ label: p.name[lang], icon: (p.slug === 'relay' ? 'automation' : 'doc') as IconName, onSelect: go('project', p.slug) })),
+        ...projects.map((p) => ({ label: p.name[lang], icon: projectIcon(p.slug), onSelect: go('project', p.slug) })),
         { label: 'RESUME.DOC', icon: 'doc', onSelect: go('resume') },
       ],
     },
@@ -185,10 +187,16 @@ export function Taskbar({ tasks, activeId, onTask }: { tasks: TaskItem[]; active
         ))}
       </nav>
       <div className="tray">
+        {volumeOpen && <div className="volume-popup" role="group" aria-label={t('Controles de sonido', 'Sound controls')} onKeyDown={e=>{if(e.key==='Escape'){setVolumeOpen(false);barRef.current?.querySelector<HTMLButtonElement>('[aria-label="Sound controls"]')?.focus()}}}>
+          <b>{t('Volumen del sistema', 'System volume')}</b>
+          <label>{Math.round(os.volume*100)}%<input aria-label={t('Volumen', 'Volume')} type="range" min="0" max="100" value={Math.round(os.volume*100)} onChange={e=>os.setVolume(Number(e.target.value)/100)}/></label>
+          <button aria-pressed={!os.soundOn} onClick={()=>os.setSoundOn(!os.soundOn)}>{os.soundOn?t('Silenciar', 'Mute'):t('Activar sonido', 'Unmute')}</button>
+          <button disabled={!os.soundOn || os.volume===0} onClick={()=>os.play('ding')}>{t('Probar', 'Test sound')}</button>
+        </div>}
         <button type="button" className="tray-button" onClick={() => os.setLang(lang === 'es' ? 'en' : 'es')} aria-label={lang === 'es' ? 'Switch to English' : 'Cambiar a español'} title={lang === 'es' ? 'Switch to English' : 'Cambiar a español'}>
           {lang.toUpperCase()}
         </button>
-        <button type="button" className={`tray-button ${os.soundOn ? '' : 'is-muted'}`} onClick={() => os.setSoundOn(!os.soundOn)} aria-label={os.soundOn ? t('Silenciar', 'Mute') : t('Activar sonido', 'Unmute')} aria-pressed={!os.soundOn} title={os.soundOn ? t('Volumen', 'Volume') : t('Silenciado', 'Muted')}>
+        <button type="button" className={`tray-button ${os.soundOn ? '' : 'is-muted'}`} onClick={() => setVolumeOpen(v=>!v)} aria-label="Sound controls" aria-expanded={volumeOpen} title={os.soundOn ? t('Volumen', 'Volume') : t('Silenciado', 'Muted')}>
           <OsIcon name="speaker" size={16} />
         </button>
         <Clock lang={lang} />

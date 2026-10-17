@@ -39,3 +39,12 @@ Production HTTP verification: all 22 routes/assets returned 200; server-rendered
 - The local AI response matched the predefined VLAN example. Spanish controls operated correctly. Reduced-motion emulation reported no connector animation.
 - Desktop Relay and AI views and mobile Relay/NAS views were visually inspected. All demos use synthetic data, not live project execution or benchmarks.
 - The existing 98.css and missing-public-origin build warnings remain as documented above.
+
+## Project playgrounds — 17 October 2026
+
+- Compared the workspace and backup before continuing. Restored the later About artwork/style and AI scenario edits from the backup; preserved those later versions outside the repository in archive95-gemini-changes-20261017. Backup itself was left unchanged.
+- TypeScript, production build, and playback reducer tests passed. Existing 98.css and public-origin warnings remain.
+- Browser checks passed Relay pointer drag and arrow-key movement, layout reset, both completed branches, selected-branch JSON, and Spanish clarification output. Reduced-motion mode hides the travelling packet.
+- Homelab stop changed health to 502; restart restored 200. NAS files moved via both drag/drop and select/move controls. The chosen AI log prompt produced its matching predefined response.
+- Saved volume survived reload; mute shortcut and welcome shortcut worked. All four project views passed horizontal-overflow checks at 390px width. Desktop welcome and mobile Relay/NAS screenshots were visually inspected. No page exceptions occurred in the sound/mobile verification sequence.
+- Evidence was checked against the public Relay repository tree. Workflow sources and validation documents exist; screenshots were not found. Other project repositories/screenshots remain unsupplied. Simulations are not live acceptance evidence.

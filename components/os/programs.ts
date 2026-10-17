@@ -1,4 +1,5 @@
 import { profile, projects } from '@/lib/content'
+import type { IconName } from './icons'
 import type { AppId } from './os-context'
 
 const projectFiles: Record<string, string> = {
@@ -8,6 +9,9 @@ const projectFiles: Record<string, string> = {
   'raspberry-pi-nas': 'PI_NAS.DOC',
 }
 export const projectFile = (slug: string) => projectFiles[slug] ?? `${slug.toUpperCase().replace(/-/g, '_').slice(0, 8)}.DOC`
+
+export const projectIcon = (slug: string): IconName => ({relay:'automation','local-ai-server':'pc','homelab-cloud':'network','raspberry-pi-nas':'hardware'} as Record<string,IconName>)[slug] ?? 'doc'
+export const projectAppName = (slug: string) => ({relay:'Relay · Workflow Playground','local-ai-server':'Local AI · Inference Console','homelab-cloud':'Homelab · Network Monitor','raspberry-pi-nas':'Pi NAS · File Explorer'} as Record<string,string>)[slug] ?? projectFile(slug)
 
 export type Program = { app: AppId; arg?: string } | { url: string }
 

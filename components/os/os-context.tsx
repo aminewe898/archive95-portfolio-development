@@ -47,6 +47,8 @@ export type OsApi = {
   message: (spec: MessageSpec) => void
   wallpaper: Wallpaper
   setWallpaper: (w: Wallpaper) => void
+  volume: number
+  setVolume: (value: number) => void
   soundOn: boolean
   setSoundOn: (on: boolean) => void
   play: (name: SoundName) => void

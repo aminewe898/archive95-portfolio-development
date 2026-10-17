@@ -6,7 +6,7 @@ import { projects } from '@/lib/content'
 import { OsIcon, type IconName } from '../icons'
 import { MenuBar } from '../menu-bar'
 import { useOs } from '../os-context'
-import { projectFile } from '../programs'
+import { projectFile, projectIcon } from '../programs'
 import { useOpenGesture } from '../use-open-gesture'
 
 type Item = { id: string; name: string; icon: IconName; type: string; detail: string; status: string; preview?: string; onOpen: () => void }
@@ -121,7 +121,7 @@ export function ProjectsExplorer({ winId }: { winId: string }) {
   const items: Item[] = projects.map((p) => ({
     id: p.slug,
     name: projectFile(p.slug),
-    icon: p.slug === 'relay' ? 'automation' : 'doc',
+    icon: projectIcon(p.slug),
     type: p.category[lang],
     detail: p.technologies.slice(0, 3).join(', '),
     status: `${p.name[lang]} — ${p.summary[lang]}`,
