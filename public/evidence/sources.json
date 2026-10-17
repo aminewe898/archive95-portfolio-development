@@ -1,0 +1,15 @@
+{
+  "reviewed": "2026-10-17",
+  "refs": {
+    "relay": "5bb1557774d68aa4a1ec34c5491797376b9293bf",
+    "cyberdeck": "e43f51ebd2956e9339247cd0bf2417b410bc57b2",
+    "cloudlink": "27024599e62ecbfec8ca088fc1bf99365fbcdc55"
+  },
+  "assets": [
+    {
+      "file": "cloudlink-dashboard.png",
+      "source": "https://github.com/aminewe898/cloudlink/blob/27024599e62ecbfec8ca088fc1bf99365fbcdc55/docs/screenshots/dashboard.png",
+      "description": "Repository-provided CloudLink server-list screenshot. Related work, not evidence of a Pi NAS transfer."
+    }
+  ]
+}

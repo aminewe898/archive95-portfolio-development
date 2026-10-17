@@ -48,3 +48,11 @@ Production HTTP verification: all 22 routes/assets returned 200; server-rendered
 - Homelab stop changed health to 502; restart restored 200. NAS files moved via both drag/drop and select/move controls. The chosen AI log prompt produced its matching predefined response.
 - Saved volume survived reload; mute shortcut and welcome shortcut worked. All four project views passed horizontal-overflow checks at 390px width. Desktop welcome and mobile Relay/NAS screenshots were visually inspected. No page exceptions occurred in the sound/mobile verification sequence.
 - Evidence was checked against the public Relay repository tree. Workflow sources and validation documents exist; screenshots were not found. Other project repositories/screenshots remain unsupplied. Simulations are not live acceptance evidence.
+
+## GitHub evidence and finishing pass — 17 October 2026
+
+- Reviewed the account repository list and Relay, Cyberdeck, and CloudLink source/validation documents. Exact reviewed revisions and screenshot provenance are recorded in `public/evidence/sources.json`.
+- Relay now links directly to the actual intake-worker workflow, architecture, and validation record. Cyberdeck monitoring source and CloudLink architecture/validation appear as explicitly related work, not proof of the separate homelab/NAS deployments.
+- Visually reviewed CloudLink's repository images: the file named sftp.png depicts a disconnected terminal and was excluded. Used the actual dashboard/server-list capture with an accurate caption and source link. User will provide the three lab repositories separately later.
+- Removed independent canned lab/NAS walkthroughs and their unrelated playback controls. The homelab route now derives from the same state as service controls; NAS focuses on its file interaction. Relay uses a clearer branching layout and expandable JSON/logs, while project lessons are collapsed by default.
+- TypeScript, playback tests, and production build passed (existing dependency CSS and missing-origin warnings unchanged). Browser checks passed both Relay branches, inspector opening, service-state/route consistency, NAS movement, all four mobile overflow checks, and screenshot loading. No page exceptions in the interaction sequence.
