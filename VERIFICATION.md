@@ -70,3 +70,8 @@ Production HTTP verification: all 22 routes/assets returned 200; server-rendered
 - Replaced the previous Arial-heavy content styling with the existing Pixelated MS Sans Serif face at 14px for readable body copy, with modestly larger headings and classic Courier for code. Window chrome and controls retain their established 98.css styling.
 - Visually inspected Welcome, Relay, and the reading document at desktop width and Welcome at 390px. The four project demos had no horizontal overflow at 390px. The Welcome panel reports the Win95 font at 14px with no internal horizontal overflow.
 - This corrects the earlier typography choice in the SEO pass; the server-rendered content and route metadata are unchanged.
+
+## Relay JSON contrast — 17 October 2026
+
+- Set the expanded JSON inspector to dark text on a white inset field, with wrapping for long sample values. The navy panel and Win95 border remain.
+- Visually checked the Outbox response and clarification branch at desktop and 390px widths. Computed text color was #111 on #fff; the code panel had no horizontal overflow.

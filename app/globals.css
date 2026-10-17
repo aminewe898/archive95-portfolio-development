@@ -593,6 +593,8 @@ textarea.mail-body { width: calc(100% - 8px); margin: 0 4px; resize: none; paddi
 .sample-json { background:#132d32; color:#c8e7cd; padding:12px; margin-top:10px; }
 .sample-json summary { cursor:pointer; font-weight:bold; }
 .sample-json pre { font:11px/1.6 monospace; overflow:auto; margin-top:8px; }
+.sample-json pre { color:#111; background:#fff; padding:10px 12px; border:2px inset #c0c0c0; white-space:pre-wrap; overflow-wrap:anywhere; }
+.sample-json summary { color:#fff; font-size:13px; line-height:1.5; }
 .prompt-choices { display:flex; gap:8px; margin:10px 0; flex-wrap:wrap; }
 .prompt-choices button { min-height:36px; text-align:left; }
 .lab-playground { padding:16px; background:#18353b; color:#fff; margin-bottom:12px; }
