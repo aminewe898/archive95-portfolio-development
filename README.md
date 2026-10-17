@@ -30,7 +30,7 @@ The full asset build (`pnpm assets`, also run before production builds) generate
 
 ## Deployment
 
-Set `NEXT_PUBLIC_SITE_URL` to the deployment's real HTTPS origin. Vercel's production URL is used as a fallback when available. Without either, the sitemap is empty and metadata uses localhost. The GitHub repository is private; pushing source does not deploy a public website.
+The configured production origin is `https://portfolio.cloudbyamine.org` (the user's proposed Oracle deployment domain). Override `NEXT_PUBLIC_SITE_URL` before building if the final domain changes; rebuild to regenerate canonical links, social URLs, structured data, and the bilingual sitemap. The GitHub repository is private; pushing source does not deploy a public website.
 
 See `VERIFICATION.md` for checks and limitations.
 

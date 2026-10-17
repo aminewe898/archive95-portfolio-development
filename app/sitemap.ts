@@ -1,3 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { projects, siteUrl } from '@/lib/content'
-export default function sitemap():MetadataRoute.Sitemap{if(!siteUrl)return [];return ['','/en','/cv',...projects.flatMap(p=>[`/projects/${p.slug}`,`/en/projects/${p.slug}`])].map(path=>({url:`${siteUrl}${path}`,changeFrequency:'monthly' as const,priority:path===''?1:.7}))}
+export default function sitemap(): MetadataRoute.Sitemap {
+ const pairs = [['/', '/en'], ['/cv?lang=es', '/cv?lang=en'], ...projects.map(p => [`/projects/${p.slug}`, `/en/projects/${p.slug}`])]
+ return pairs.flatMap(([es,en]) => [es,en].map(path => ({url:`${siteUrl}${path}`,changeFrequency:'monthly' as const,priority:path==='/'||path==='/en'?1:0.7,alternates:{languages:{es:`${siteUrl}${es}`,en:`${siteUrl}${en}`}}})))
+}

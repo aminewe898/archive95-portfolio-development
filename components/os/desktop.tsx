@@ -215,7 +215,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
     const target = project ? projectPath(lang, project) : topWindow?.app === 'resume' ? `/cv?lang=${lang}` : homePath(lang)
     if (window.location.pathname + window.location.search !== target) window.history.replaceState(null, '', target)
     const name = project ? projects.find((p) => p.slug === project)?.name[lang] : undefined
-    document.title = name ? `${name} — ${profile.name}` : `${profile.name} — Archive95`
+    document.title = name ? `${name} — ${projects.find(p=>p.slug===project)?.category[lang]} | ${profile.name}` : topWindow?.app === 'resume' ? `CV — ${profile.name}` : `${profile.name} — ${lang === 'es' ? 'Técnico de sistemas y redes en Reus' : 'Systems & network technician in Reus'}`
   }, [topWindow?.app, topWindow?.arg, lang])
 
   useEffect(() => {
