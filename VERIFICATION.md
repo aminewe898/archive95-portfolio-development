@@ -64,3 +64,9 @@ Production HTTP verification: all 22 routes/assets returned 200; server-rendered
 - Production origin uses the user's proposed https://portfolio.cloudbyamine.org address, configurable with NEXT_PUBLIC_SITE_URL. This does not provision DNS, deploy to Oracle, submit a sitemap, or verify search-engine indexing.
 - Content typography is now 15–16px Arial with more line spacing; code uses larger Consolas text. Win95 frames, title bars, icons, colors, and control styling are retained.
 - Production build passed. Verified initial HTML content/structured data across home, English, project and CV routes; sitemap has 12 entries. Reading view worked in a JavaScript-disabled browser. All four demos and the reading view passed 390px horizontal-overflow checks. Desktop Relay/reading view and mobile welcome were visually inspected. Existing third-party 98.css warning remains; localhost metadata warning is resolved.
+
+## Win95 typography correction — 17 October 2026
+
+- Replaced the previous Arial-heavy content styling with the existing Pixelated MS Sans Serif face at 14px for readable body copy, with modestly larger headings and classic Courier for code. Window chrome and controls retain their established 98.css styling.
+- Visually inspected Welcome, Relay, and the reading document at desktop width and Welcome at 390px. The four project demos had no horizontal overflow at 390px. The Welcome panel reports the Win95 font at 14px with no internal horizontal overflow.
+- This corrects the earlier typography choice in the SEO pass; the server-rendered content and route metadata are unchanged.
