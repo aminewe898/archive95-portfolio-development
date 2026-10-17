@@ -32,6 +32,8 @@ The full asset build (`pnpm assets`, also run before production builds) generate
 
 The configured production origin is `https://portfolio.cloudbyamine.org` (the user's proposed Oracle deployment domain). Override `NEXT_PUBLIC_SITE_URL` before building if the final domain changes; rebuild to regenerate canonical links, social URLs, structured data, and the bilingual sitemap. The GitHub repository is private; pushing source does not deploy a public website.
 
+For the Oracle VM, use a supported Node.js version and pnpm, then run `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test:demo`, and `pnpm build` from the repository. Run `pnpm start` as a persistent service behind an HTTPS reverse proxy. Set `NEXT_PUBLIC_SITE_URL` to the final public origin **before** the build. After starting the service, set `VERIFY_ORIGIN` to its local HTTP address and run `node scripts/verify.mjs` to check the routes and generated assets. DNS, TLS, the reverse proxy, and the service manager must be configured on the VM; this repository does not configure them.
+
 See `VERIFICATION.md` for checks and limitations.
 
 ## Interactive project demos

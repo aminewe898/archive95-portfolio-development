@@ -75,3 +75,11 @@ Production HTTP verification: all 22 routes/assets returned 200; server-rendered
 
 - Set the expanded JSON inspector to dark text on a white inset field, with wrapping for long sample values. The navy panel and Win95 border remain.
 - Visually checked the Outbox response and clarification branch at desktop and 390px widths. Computed text color was #111 on #fff; the code panel had no horizontal overflow.
+
+## Minesweeper, window resize, and deployment check — 17 October 2026
+
+- Restored a nine-column, nine-row Minesweeper board. Browser checks found 81 cells in a 9 × 9 layout at desktop and 390px mobile widths; the mobile page had no horizontal overflow.
+- Checked right-click flagging, ignoring a click on a flagged cell, preserving flags when the board is first seeded, a safe first reveal, and F2 restart. A loss revealed ten mines and reset to 81 covered cells; a deterministic board reached the win state and flagged all ten mines. Random boards were not exhaustively tested.
+- Control Panel resizing worked by pointer and keyboard. A pointer drag down to the minimum stopped at 360 × 270px; its applets and detail panel remained reachable. The resize grip is keyboard focusable with an accessible label.
+- Frozen-lockfile installation, standalone TypeScript check, playback reducer checks, and an optimized production build passed. Started the production server and `scripts/verify.mjs` returned 200 for all 22 checked routes and assets, including robots.txt and sitemap.xml. Server-rendered identity and project links were present.
+- The build still reports a non-fatal invalid media query in the upstream 98.css stylesheet. Oracle VM DNS, TLS, reverse proxy, and process supervision were not available to verify here; pushing this commit will not deploy the live site.

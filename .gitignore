@@ -13,7 +13,9 @@ __v0_jsx-dev-runtime.ts
 # Common ignores
 node_modules
 .next/
-.DS_Store# Local tooling and generated build metadata
+.DS_Store
+
+# Local tooling and generated build metadata
 .playwright-mcp/
 *.tsbuildinfo
 next-env.d.ts

@@ -80,9 +80,11 @@ export function WindowFrame({ win, title, icon, active, resizable, dialog, onFoc
     const startY = e.clientY
     let w = win.w
     let h = win.h
+    const minW = win.app === 'skills' ? 360 : MIN_W
+    const minH = win.app === 'skills' ? 270 : MIN_H
     const move = (ev: PointerEvent) => {
-      w = Math.max(MIN_W, Math.min(win.w + ev.clientX - startX, window.innerWidth - win.x))
-      h = Math.max(MIN_H, Math.min(win.h + ev.clientY - startY, window.innerHeight - TASKBAR - win.y))
+      w = Math.max(minW, Math.min(win.w + ev.clientX - startX, window.innerWidth - win.x))
+      h = Math.max(minH, Math.min(win.h + ev.clientY - startY, window.innerHeight - TASKBAR - win.y))
       el.style.width = `${w}px`
       el.style.height = `${h}px`
     }
@@ -128,7 +130,15 @@ export function WindowFrame({ win, title, icon, active, resizable, dialog, onFoc
         </div>
       </div>
       <div className="window-body os-window-body">{children}</div>
-      {resizable && !win.maximized && <div className="resize-grip" onPointerDown={startResize} aria-hidden="true" />}
+      {resizable && !win.maximized && <div className="resize-grip" role="separator" tabIndex={0} aria-label={t('Cambiar tamaño de ventana', 'Resize window')} onPointerDown={startResize} onKeyDown={(e) => {
+        const step = e.shiftKey ? 10 : 24
+        const width = e.key === 'ArrowRight' ? step : e.key === 'ArrowLeft' ? -step : 0
+        const height = e.key === 'ArrowDown' ? step : e.key === 'ArrowUp' ? -step : 0
+        if (!width && !height) return
+        e.preventDefault()
+        e.stopPropagation()
+        onCommit({ w: Math.max(win.app === 'skills' ? 360 : MIN_W, Math.min(win.w + width, window.innerWidth - win.x)), h: Math.max(win.app === 'skills' ? 270 : MIN_H, Math.min(win.h + height, window.innerHeight - TASKBAR - win.y)) })
+      }} />}
     </section>
   )
 }

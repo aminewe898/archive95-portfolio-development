@@ -26,8 +26,9 @@ const neighbours = (i: number) => {
   return out
 }
 
-function seed(safe: number): Cell[] {
+function seed(safe: number, previous: Cell[]): Cell[] {
   const board = emptyBoard()
+  board.forEach((cell, i) => { cell.flag = previous[i].flag })
   const forbidden = new Set([safe, ...neighbours(safe)])
   let placed = 0
   while (placed < MINES) {
@@ -81,7 +82,8 @@ export function Minesweeper({ winId }: { winId: string }) {
   const openCell = (i: number) => {
     if (state === 'won' || state === 'lost') return
     if (flagMode) return toggleFlag(i)
-    let next = state === 'ready' ? seed(i) : board.map((c) => ({ ...c }))
+    if (board[i].flag) return
+    let next = state === 'ready' ? seed(i, board) : board.map((c) => ({ ...c }))
     if (state === 'ready') setState('playing')
     const cell = next[i]
     if (cell.flag) return
@@ -107,7 +109,7 @@ export function Minesweeper({ winId }: { winId: string }) {
   const pad = (n: number) => String(Math.max(-99, n)).padStart(3, '0')
 
   return (
-    <div className="mines">
+    <div className="mines" onKeyDown={(e) => { if (e.key === 'F2') { e.preventDefault(); reset() } }}>
       <MenuBar
         menus={[
           {
