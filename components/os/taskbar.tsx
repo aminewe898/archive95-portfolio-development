@@ -134,6 +134,7 @@ export function Taskbar({ tasks, activeId, onTask }: { tasks: TaskItem[]; active
         { label: 'Outlook Express', icon: 'mail', onSelect: go('mail') },
         { label: t('Bloc de notas', 'Notepad'), icon: 'notepad', onSelect: go('notepad') },
         { label: t('Buscaminas', 'Minesweeper'), icon: 'mines', onSelect: go('mines') },
+        { label: 'Snake', icon: 'snake', onSelect: go('snake') },
       ],
     },
     {

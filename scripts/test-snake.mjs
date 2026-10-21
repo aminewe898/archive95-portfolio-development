@@ -1,0 +1,38 @@
+import assert from 'node:assert/strict'
+import { createSnakeGame, placeFood, snakeReducer, SNAKE_SIZE } from '../components/os/games/snake-engine.ts'
+
+const step = state => snakeReducer(state, { type: 'tick', random: 0.5 })
+const start = () => snakeReducer(createSnakeGame(), { type: 'toggle' })
+const initial = createSnakeGame()
+assert.equal(step(initial), initial, 'The ready board must not move.')
+assert.equal(step(start()).snake[0].x, 9)
+assert.equal(snakeReducer(start(), { type: 'turn', direction: 'left' }).direction, 'right', 'A snake cannot reverse into its neck.')
+let turn = snakeReducer(start(), { type: 'turn', direction: 'up' })
+turn = snakeReducer(turn, { type: 'turn', direction: 'left' })
+assert.equal(turn.direction, 'up', 'Only one direction change is allowed between ticks.')
+turn = snakeReducer(step(turn), { type: 'turn', direction: 'left' })
+assert.equal(turn.direction, 'left')
+
+const paused = snakeReducer(start(), { type: 'pause' })
+assert.equal(paused.status, 'paused')
+assert.equal(step(paused), paused)
+assert.equal(snakeReducer(paused, { type: 'toggle' }).status, 'playing')
+assert.equal(snakeReducer(createSnakeGame(), { type: 'turn', direction: 'up' }).status, 'playing', 'Direction controls can start the game.')
+
+const eating = step({ ...start(), food: { x: 9, y: 10 } })
+assert.equal(eating.score, 10)
+assert.equal(eating.snake.length, 4)
+assert.ok(!eating.snake.some(p => p.x === eating.food.x && p.y === eating.food.y), 'Food must spawn on an empty cell.')
+assert.equal(step({ ...start(), snake: [{ x: 19, y: 10 }, { x: 18, y: 10 }] }).status, 'lost', 'Walls are solid.')
+assert.equal(step({ ...start(), snake: [{ x: 5, y: 5 }, { x: 5, y: 6 }, { x: 6, y: 6 }, { x: 6, y: 5 }, { x: 7, y: 5 }] }).status, 'lost', 'A body collision ends the game.')
+assert.equal(step({ ...start(), snake: [{ x: 1, y: 1 }, { x: 1, y: 2 }, { x: 2, y: 2 }, { x: 2, y: 1 }] }).status, 'playing', 'Moving into the departing tail is legal.')
+
+const full = Array.from({ length: SNAKE_SIZE ** 2 }, (_, i) => ({ x: i % SNAKE_SIZE, y: Math.floor(i / SNAKE_SIZE) }))
+assert.equal(placeFood(full, 0), null)
+const almostFull = full.filter(p => !(p.x === 1 && p.y === 0))
+const won = step({ ...start(), snake: almostFull, food: { x: 1, y: 0 } })
+assert.equal(won.status, 'won')
+assert.equal(won.snake.length, SNAKE_SIZE ** 2)
+assert.equal(won.food, null)
+assert.deepEqual(snakeReducer(won, { type: 'reset', random: 0 }), createSnakeGame(0))
+console.log('Snake checks passed: movement, input queue, pause, food, growth, collisions, departing tail, full-board win, reset.')

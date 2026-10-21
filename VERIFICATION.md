@@ -1,5 +1,12 @@
 # Archive95 verification
 
+## Snake — 21 October 2026
+
+- Added a 20 × 20 Snake game with keyboard and touch controls, pause/resume, restart, score and persisted best score. It is available on the desktop, Start Programs, Run, and the terminal's START command.
+- Game-rule checks pass for movement, reversal prevention, one turn per tick, pause, food placement/growth, wall and body collisions, moving into the departing tail, a full-board win, and reset.
+- Browser checks confirmed food scoring, best-score storage, game over, restart, arrow-key movement, touch buttons, and pause after minimizing/restoring. Desktop and 390px mobile views were visually inspected.
+- The 320 × 568 layout fit without page overflow or clipped game controls. TypeScript and the webpack production build passed. The default Turbopack build encountered a CSS-worker process failure in this environment.
+
 ## Current desktop polish — 16 October 2026
 
 - Production build passed, including asset generation, TypeScript, and static routes.

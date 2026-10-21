@@ -13,6 +13,7 @@ export type AppId =
   | 'mail'
   | 'terminal'
   | 'mines'
+  | 'snake'
   | 'notepad'
   | 'recycle'
   | 'skills'

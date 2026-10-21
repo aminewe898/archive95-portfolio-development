@@ -36,6 +36,10 @@ type Entry = { C: IconComponent; small?: Variant; large: Variant }
 
 const icon = (C: unknown, large: Variant, small?: Variant): Entry => ({ C: C as IconComponent, large, small })
 
+function SnakeIcon({ variant: _variant, ...props }: SVGProps<SVGSVGElement> & { variant?: string }) {
+  return <svg {...props} viewBox="0 0 32 32" shapeRendering="crispEdges"><path fill="#000" d="M3 6h19v9H11v5h15v9H3V17h12v-5H3z"/><path fill="#008000" d="M4 7h17v7H10v7h15v7H4V18h12v-7H4z"/><path fill="#80ff80" d="M4 7h17v2H6v2H4zm0 11h12v2H6v6H4z"/><path fill="#fff" d="M17 8h2v2h-2z"/><path fill="#f00" d="M25 3h4v4h-4z"/></svg>
+}
+
 const library = {
   computer: icon(Computer, '32x32_4', '16x16_4'),
   folder: icon(Folder, '32x32_4', '16x16_4'),
@@ -44,6 +48,7 @@ const library = {
   mail: icon(Mail, '32x32_4', '16x16_4'),
   dos: icon(MsDos, '32x32_32', '16x16_32'),
   mines: icon(Winmine1, '32x32_4', '16x16_4'),
+  snake: icon(SnakeIcon, '32x32_4'),
   notepad: icon(Notepad, '32x32_4', '16x16_4'),
   recycleEmpty: icon(RecycleEmpty, '32x32_4', '16x16_4'),
   recycleFull: icon(RecycleFull, '32x32_4', '16x16_4'),

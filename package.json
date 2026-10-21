@@ -9,7 +9,8 @@
     "assets": "node scripts/assets.mjs",
     "typecheck": "tsc --noEmit",
     "start": "next start",
-    "test:demo": "node scripts/test-playback.mjs"
+    "test:demo": "node scripts/test-playback.mjs",
+    "test:snake": "node scripts/test-snake.mjs"
   },
   "dependencies": {
     "98.css": "^0.1.21",

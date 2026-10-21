@@ -20,6 +20,8 @@ Production: `pnpm build`, then `pnpm start`. Type checking: `pnpm typecheck`.
 - On mobile, apps fill the desktop and icons open with a tap. On desktop, double-click or keyboard activation opens an icon.
 - Wallpaper, sound, and welcome preferences are stored locally when browser storage is available. No account, database, or contact backend is required. Email opens the visitor's mail application.
 
+Snake is available through `SNAKE.EXE` on the desktop, Start → Programs → Snake, `SNAKE` in Run, or `START SNAKE` in MS-DOS. Use arrow keys or WASD to steer, Space/P to pause, and F2 to restart; directional buttons support touch. The game pauses when inactive, minimized, or hidden. Its best score is stored locally when browser storage is available. Run `pnpm test:snake` for the game rules and collision checks.
+
 ## Content and artwork
 
 `lib/content.ts` contains the profile and project content. The active desktop lives in `components/os`.

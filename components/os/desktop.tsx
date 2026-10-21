@@ -5,6 +5,7 @@ import { homePath, profile, projectPath, projects, type Lang } from '@/lib/conte
 import { AboutApp } from './apps/about'
 import { MailApp } from './apps/mail'
 import { Minesweeper } from './apps/minesweeper'
+import { SnakeGame } from './apps/snake'
 import { NotepadApp } from './apps/notepad'
 import { ProjectViewer } from './apps/project'
 import { ProjectsExplorer, RecycleBin } from './apps/explorer'
@@ -36,6 +37,7 @@ const sizes: Record<AppId, [number, number]> = {
   mail: [540, 440],
   terminal: [620, 390],
   mines: [196, 292],
+  snake: [360, 610],
   notepad: [500, 400],
   recycle: [500, 330],
   skills: [560, 440],
@@ -46,7 +48,7 @@ const sizes: Record<AppId, [number, number]> = {
 }
 
 const dialogs = new Set<AppId>(['run', 'shutdown', 'message', 'display', 'about'])
-const fixedSize = new Set<AppId>([...dialogs, 'mines', 'welcome'])
+const fixedSize = new Set<AppId>([...dialogs, 'mines', 'snake', 'welcome'])
 const singletons = new Set<AppId>(['project', 'mail'])
 
 type DesktopIcon = { id: string; label: string; icon: IconName; app: AppId; arg?: string }
@@ -281,6 +283,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
     { id: 'readme', label: 'README.TXT', icon: 'notepad', app: 'notepad' },
     { id: 'skills', label: t('Panel de control', 'Control Panel'), icon: 'settings', app: 'skills' },
     { id: 'mines', label: t('Buscaminas', 'Minesweeper'), icon: 'mines', app: 'mines' },
+    { id: 'snake', label: 'SNAKE.EXE', icon: 'snake', app: 'snake' },
     { id: 'recycle', label: t('Papelera', 'Recycle Bin'), icon: recycleEmptied ? 'recycleEmpty' : 'recycleFull', app: 'recycle' },
   ]
 
@@ -303,6 +306,8 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
         return { title: 'MS-DOS Prompt', icon: 'dos' }
       case 'mines':
         return { title: t('Buscaminas', 'Minesweeper'), icon: 'mines' }
+      case 'snake':
+        return { title: 'Snake', icon: 'snake' }
       case 'notepad':
         return { title: w.arg?.startsWith('new') ? t('Sin título — Bloc de notas', 'Untitled — Notepad') : `README.TXT — ${t('Bloc de notas', 'Notepad')}`, icon: 'notepad' }
       case 'recycle':
@@ -338,6 +343,8 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
         return <TerminalApp winId={w.id} />
       case 'mines':
         return <Minesweeper winId={w.id} />
+      case 'snake':
+        return <SnakeGame winId={w.id} suspended={w.minimized || w.id !== activeId || phase !== 'desktop' || saver} />
       case 'notepad':
         return <NotepadApp blank={w.arg?.startsWith('new')} winId={w.id} />
       case 'recycle':

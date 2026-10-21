@@ -23,6 +23,8 @@ const aliases: Record<string, AppId> = {
   winmine: 'mines',
   minesweeper: 'mines',
   buscaminas: 'mines',
+  snake: 'snake',
+  serpiente: 'snake',
   notepad: 'notepad',
   readme: 'notepad',
   'readme.txt': 'notepad',
