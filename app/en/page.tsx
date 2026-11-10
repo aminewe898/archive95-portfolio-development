@@ -1,5 +1,0 @@
-import { Desktop } from '@/components/os/desktop'
-import { PortfolioDocument } from '@/components/portfolio-document'
-import { pageMetadata } from '@/lib/seo'
-export const metadata = pageMetadata('en')
-export default function Page(){return <><Desktop lang="en"/><PortfolioDocument lang="en"/></>}

@@ -188,16 +188,16 @@ export function Taskbar({ tasks, activeId, onTask }: { tasks: TaskItem[]; active
         ))}
       </nav>
       <div className="tray">
-        {volumeOpen && <div className="volume-popup" role="group" aria-label={t('Controles de sonido', 'Sound controls')} onKeyDown={e=>{if(e.key==='Escape'){setVolumeOpen(false);barRef.current?.querySelector<HTMLButtonElement>('[aria-label="Sound controls"]')?.focus()}}}>
+        {volumeOpen && <div className="volume-popup" role="group" aria-label={t('Controles de sonido', 'Sound controls')} onKeyDown={e=>{if(e.key==='Escape'){setVolumeOpen(false);barRef.current?.querySelector<HTMLButtonElement>('[data-tray="sound"]')?.focus()}}}>
           <b>{t('Volumen del sistema', 'System volume')}</b>
           <label>{Math.round(os.volume*100)}%<input aria-label={t('Volumen', 'Volume')} type="range" min="0" max="100" value={Math.round(os.volume*100)} onChange={e=>os.setVolume(Number(e.target.value)/100)}/></label>
           <button aria-pressed={!os.soundOn} onClick={()=>os.setSoundOn(!os.soundOn)}>{os.soundOn?t('Silenciar', 'Mute'):t('Activar sonido', 'Unmute')}</button>
           <button disabled={!os.soundOn || os.volume===0} onClick={()=>os.play('ding')}>{t('Probar', 'Test sound')}</button>
         </div>}
-        <button type="button" className="tray-button" onClick={() => os.setLang(lang === 'es' ? 'en' : 'es')} aria-label={lang === 'es' ? 'Switch to English' : 'Cambiar a español'} title={lang === 'es' ? 'Switch to English' : 'Cambiar a español'}>
+        <button type="button" className="tray-button" onClick={() => os.setLang(lang === 'es' ? 'en' : 'es')} aria-label={lang === 'es' ? 'ES — Switch to English' : 'EN — Cambiar a español'} title={lang === 'es' ? 'Switch to English' : 'Cambiar a español'}>
           {lang.toUpperCase()}
         </button>
-        <button type="button" className={`tray-button ${os.soundOn ? '' : 'is-muted'}`} onClick={() => setVolumeOpen(v=>!v)} aria-label="Sound controls" aria-expanded={volumeOpen} title={os.soundOn ? t('Volumen', 'Volume') : t('Silenciado', 'Muted')}>
+        <button type="button" className={`tray-button ${os.soundOn ? '' : 'is-muted'}`} data-tray="sound" onClick={() => setVolumeOpen(v=>!v)} aria-label={t('Controles de sonido', 'Sound controls')} aria-expanded={volumeOpen} title={os.soundOn ? t('Volumen', 'Volume') : t('Silenciado', 'Muted')}>
           <OsIcon name="speaker" size={16} />
         </button>
         <Clock lang={lang} />

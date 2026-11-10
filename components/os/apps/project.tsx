@@ -64,7 +64,7 @@ export function ProjectViewer({ slug, winId, suspended = false }: { slug: string
       <div className="toolbar">
         <div className="toolbar-group">
           <button type="button" onClick={() => open('project', prev.slug)} aria-label={`${t('Anterior', 'Previous')}: ${prev.name[lang]}`}>
-            ◄ {t('Anterior', 'Back')}
+            ◄ {t('Anterior', 'Previous')}
           </button>
           <button type="button" onClick={() => open('project', next.slug)} aria-label={`${t('Siguiente', 'Next')}: ${next.name[lang]}`}>
             {t('Siguiente', 'Next')} ►
@@ -87,7 +87,8 @@ export function ProjectViewer({ slug, winId, suspended = false }: { slug: string
         <button type="button" aria-pressed={view === 'dossier'} onClick={() => setView('dossier')}><OsIcon name="doc" size={16}/>{t('Dossier del proyecto', 'Project dossier')}</button>
         <span>{t('Explora cómo funciona', 'Explore how it works')}</span>
       </div>
-      {view === 'demo' ? <div className="demo-scroll"><ProjectDemo key={slug} slug={slug} suspended={suspended}/><ProjectEvidence project={p} readDossier={()=>setView('dossier')}/></div> : <div className="sunken-panel doc-scroll">
+      <div className="demo-scroll" hidden={view !== 'demo'}><ProjectDemo key={slug} slug={slug} suspended={suspended || view !== 'demo'}/><ProjectEvidence project={p} readDossier={()=>setView('dossier')}/></div>
+      {view === 'dossier' && <div className="sunken-panel doc-scroll">
         <article className="doc-page" style={{ '--document-zoom': zoom } as React.CSSProperties}>
           <p className="doc-kicker">
             ARCHIVE / {String(index + 1).padStart(2, '0')} · {p.category[lang]}

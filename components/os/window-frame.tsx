@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 import { OsIcon, type IconName } from './icons'
 import { useOs, type OsWindow } from './os-context'
 
@@ -11,6 +11,7 @@ type Props = {
   active: boolean
   resizable: boolean
   dialog?: boolean
+  blocked?: boolean
   onFocus: () => void
   onMinimize: () => void
   onToggleMaximize: () => void
@@ -23,11 +24,22 @@ const TASKBAR = 30
 const MIN_W = 220
 const MIN_H = 140
 
-export function WindowFrame({ win, title, icon, active, resizable, dialog, onFocus, onMinimize, onToggleMaximize, onClose, onCommit, children }: Props) {
+export function WindowFrame({ win, title, icon, active, resizable, dialog, blocked = false, onFocus, onMinimize, onToggleMaximize, onClose, onCommit, children }: Props) {
   const ref = useRef<HTMLElement>(null)
   const cleanupGesture = useRef<(() => void) | null>(null)
   useEffect(() => () => cleanupGesture.current?.(), [])
   const { t } = useOs()
+  const [compact, setCompact] = useState(false)
+  const modal = win.app === 'message' || win.app === 'shutdown'
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 640px)')
+    const change = () => setCompact(media.matches)
+    change(); media.addEventListener('change', change)
+    return () => media.removeEventListener('change', change)
+  }, [])
+  useEffect(() => {
+    if (active && !blocked && !win.minimized && !ref.current?.contains(document.activeElement)) ref.current?.focus()
+  }, [active, blocked, win.minimized])
   const titleId = `${win.id.replace(/[^a-z0-9]/gi, '-')}-title`
 
   const isCompact = () => typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches
@@ -69,7 +81,7 @@ export function WindowFrame({ win, title, icon, active, resizable, dialog, onFoc
     window.addEventListener('pointercancel', up)
   }
 
-  function startResize(e: ReactPointerEvent<HTMLDivElement>) {
+  function startResize(e: ReactPointerEvent<HTMLButtonElement>) {
     if (e.button !== 0) return
     const el = ref.current
     if (!el) return
@@ -108,7 +120,9 @@ export function WindowFrame({ win, title, icon, active, resizable, dialog, onFoc
     <section
       ref={ref}
       role="dialog"
-      aria-modal="false"
+      aria-modal={modal}
+      tabIndex={-1}
+      inert={blocked || compact && !active}
       aria-labelledby={titleId}
       className={`window os-window ${win.maximized ? 'is-maximized' : ''} ${dialog ? 'is-dialog' : ''}`}
       style={{ left: win.x, top: win.y, width: win.w, height: win.h, zIndex: win.z, display: win.minimized ? 'none' : undefined }}
@@ -116,21 +130,31 @@ export function WindowFrame({ win, title, icon, active, resizable, dialog, onFoc
       onFocusCapture={onFocus}
       onKeyDown={(e) => {
         if (e.key === 'Escape' && dialog) onClose()
+        if (modal && e.key === 'Tab') {
+          const items = Array.from(ref.current?.querySelectorAll<HTMLElement>('button:not(:disabled), input, select, textarea, [tabindex="0"]') ?? [])
+          const first = items[0], last = items[items.length - 1]
+          if (e.shiftKey && (document.activeElement === first || document.activeElement === ref.current)) { e.preventDefault(); last?.focus() }
+          else if (!e.shiftKey && (document.activeElement === last || document.activeElement === ref.current)) { e.preventDefault(); first?.focus() }
+        }
       }}
     >
-      <div className={`title-bar ${active ? '' : 'inactive'}`} onPointerDown={startDrag} onDoubleClick={() => resizable && onToggleMaximize()}>
+      <div tabIndex={0} aria-label={t('Mover ventana con Alt y las flechas', 'Move window with Alt and arrow keys')} onKeyDown={e=>{
+        if (!e.altKey || !e.key.startsWith('Arrow') || win.maximized || isCompact()) return
+        e.preventDefault(); e.stopPropagation()
+        onCommit({x:Math.max(0,Math.min(window.innerWidth-win.w,win.x+(e.key==='ArrowRight'?16:e.key==='ArrowLeft'?-16:0))),y:Math.max(0,Math.min(window.innerHeight-TASKBAR-30,win.y+(e.key==='ArrowDown'?16:e.key==='ArrowUp'?-16:0)))})
+      }} className={`title-bar ${active ? '' : 'inactive'}`} onPointerDown={startDrag} onDoubleClick={() => resizable && onToggleMaximize()}>
         <div className="title-bar-text" id={titleId}>
           <OsIcon name={icon} size={16} />
           <span>{title}</span>
         </div>
         <div className="title-bar-controls">
-          {!dialog && <button type="button" aria-label="Minimize" title={t('Minimizar', 'Minimize')} onClick={onMinimize} />}
-          {!dialog && resizable && <button type="button" aria-label={win.maximized ? 'Restore' : 'Maximize'} title={win.maximized ? t('Restaurar', 'Restore') : t('Maximizar', 'Maximize')} onClick={onToggleMaximize} />}
-          <button type="button" aria-label="Close" title={t('Cerrar', 'Close')} onClick={onClose} />
+          {!dialog && <button type="button" data-control="Minimize" aria-label={t('Minimizar', 'Minimize')} title={t('Minimizar', 'Minimize')} onClick={onMinimize} />}
+          {!dialog && resizable && <button type="button" data-control={win.maximized ? 'Restore' : 'Maximize'} aria-label={win.maximized ? t('Restaurar', 'Restore') : t('Maximizar', 'Maximize')} title={win.maximized ? t('Restaurar', 'Restore') : t('Maximizar', 'Maximize')} onClick={onToggleMaximize} />}
+          <button type="button" data-control="Close" aria-label={t('Cerrar', 'Close')} title={t('Cerrar', 'Close')} onClick={onClose} />
         </div>
       </div>
       <div className="window-body os-window-body">{children}</div>
-      {resizable && !win.maximized && <div className="resize-grip" role="separator" tabIndex={0} aria-label={t('Cambiar tamaño de ventana', 'Resize window')} onPointerDown={startResize} onKeyDown={(e) => {
+      {resizable && !win.maximized && <button type="button" className="resize-grip" title={t('Usa las flechas para cambiar el tama\u00f1o', 'Use arrow keys to resize')} aria-label={t('Cambiar tamaño de ventana', 'Resize window')} onPointerDown={startResize} onKeyDown={(e) => {
         const step = e.shiftKey ? 10 : 24
         const width = e.key === 'ArrowRight' ? step : e.key === 'ArrowLeft' ? -step : 0
         const height = e.key === 'ArrowDown' ? step : e.key === 'ArrowUp' ? -step : 0

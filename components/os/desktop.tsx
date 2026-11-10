@@ -1,18 +1,18 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { homePath, profile, projectPath, projects, type Lang } from '@/lib/content'
-import { AboutApp } from './apps/about'
-import { MailApp } from './apps/mail'
-import { Minesweeper } from './apps/minesweeper'
-import { SnakeGame } from './apps/snake'
-import { NotepadApp } from './apps/notepad'
-import { ProjectViewer } from './apps/project'
+import { profile, projectPath, projects, type Lang } from '@/lib/content'
+const AboutApp = dynamic(() => import('./apps/about').then(m => m.AboutApp))
+const MailApp = dynamic(() => import('./apps/mail').then(m => m.MailApp))
+const Minesweeper = dynamic(() => import('./apps/minesweeper').then(m => m.Minesweeper))
+const SnakeGame = dynamic(() => import('./apps/snake').then(m => m.SnakeGame))
+const NotepadApp = dynamic(() => import('./apps/notepad').then(m => m.NotepadApp))
+const ProjectViewer = dynamic(() => import('./apps/project').then(m => m.ProjectViewer))
 import { ProjectsExplorer, RecycleBin } from './apps/explorer'
-import { ResumeApp } from './apps/resume'
-import { SkillsApp } from './apps/skills'
+const ResumeApp = dynamic(() => import('./apps/resume').then(m => m.ResumeApp))
+const SkillsApp = dynamic(() => import('./apps/skills').then(m => m.SkillsApp))
 import { DisplayProperties, MessageBox, RunDialog, ShutdownDialog, wallpaperOptions } from './apps/system-dialogs'
-import { TerminalApp } from './apps/terminal'
+const TerminalApp = dynamic(() => import('./apps/terminal').then(m => m.TerminalApp))
 import { WelcomeApp } from './apps/welcome'
 import { BootScreen, OffScreen, Screensaver } from './boot'
 import { OsIcon, type IconName } from './icons'
@@ -24,6 +24,10 @@ import { useOpenGesture } from './use-open-gesture'
 import { WindowFrame as WindowFrameLazy } from './window-frame'
 
 import { readPreference, writePreference } from './storage'
+import dynamic from 'next/dynamic'
+import { PortfolioDocument } from '../portfolio-document'
+import { documentPath, parseDocumentRoute, type DocumentRoute } from '@/lib/navigation'
+import { syncDocumentMetadata } from './document-metadata'
 
 const TASKBAR = 30
 const IDLE_MS = 120_000
@@ -57,7 +61,22 @@ type ContextMenuState = { x: number; y: number } | null
 
 export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: { app: AppId; arg?: string } }) {
   const [lang, setLangState] = useState<Lang>(initialLang)
-  const [windows, setWindows] = useState<OsWindow[]>([])
+  const [route, setRoute] = useState<DocumentRoute>({ lang: initialLang, ...(initial?.app === 'project' ? { slug: initial.arg } : {}), ...(initial?.app === 'resume' ? { cv: true } : {}) })
+  const routeRef = useRef(route)
+  routeRef.current = route
+  const launchers = useRef(new Map<string, HTMLElement>())
+  const [windows, setWindows] = useState<OsWindow[]>(() => {
+    const app = initial?.app ?? 'welcome'
+    const [w, h] = sizes[app]
+    return [{ id: singletons.has(app) ? app : windowId(app, initial?.arg), app, arg: initial?.arg, x: 120, y: 30, w, h, z: 10, minimized: false, maximized: false }]
+  })
+  const navigate = useCallback((next: DocumentRoute) => {
+    const target = documentPath(next)
+    if (window.location.pathname + window.location.search !== target) window.history.pushState(null, '', target + (window.location.hash === '#portfolio-document' ? window.location.hash : ''))
+    routeRef.current = next
+    setRoute(next)
+    setLangState(next.lang)
+  }, [])
   const [wallpaper, setWallpaperState] = useState<Wallpaper>('teal')
   const [soundOn, setSoundOnState] = useState(false)
   const [volume, setVolumeState] = useState(0.5)
@@ -122,14 +141,26 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
 
   const open = useCallback(
     (app: AppId, arg?: string) => {
+      const id = singletons.has(app) ? app : windowId(app, arg)
+      if (document.activeElement instanceof HTMLElement && !launchers.current.has(id)) launchers.current.set(id, document.activeElement)
+      if (app === 'project' || app === 'resume') navigate({ lang: routeRef.current.lang, ...(app === 'project' ? { slug: arg } : { cv: true }) })
       play('open')
       spawn(app, arg)
       setMenu(null)
     },
-    [play, spawn],
+    [play, spawn, navigate],
   )
 
-  const close = useCallback((id: string) => setWindows((list) => list.filter((w) => w.id !== id)), [])
+  const close = useCallback((id: string) => {
+    setWindows(list => list.filter(w => w.id !== id))
+    if (id === 'project' || id === 'resume') navigate({ lang: routeRef.current.lang })
+    const launcher = launchers.current.get(id)
+    launchers.current.delete(id)
+    requestAnimationFrame(() => {
+      if (launcher?.isConnected && !launcher.closest('[inert]')) launcher.focus()
+      else document.querySelector<HTMLElement>('.os-window:not([inert]):not([style*="display: none"])')?.focus()
+    })
+  }, [navigate])
   const patch = useCallback((id: string, p: Partial<OsWindow>) => setWindows((list) => list.map((w) => (w.id === id ? { ...w, ...p } : w))), [])
 
   const message = useCallback(
@@ -141,9 +172,8 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
   )
 
   const setLang = useCallback((next: Lang) => {
-    setLangState(next)
-    document.documentElement.lang = next
-  }, [])
+    navigate({ ...routeRef.current, lang: next })
+  }, [navigate])
 
   const setWallpaper = useCallback((w: Wallpaper) => {
     setWallpaperState(w)
@@ -189,36 +219,45 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
     }
     window.addEventListener('resize', onResize)
 
-    if (initial) spawn(initial.app, initial.arg)
-    else if (!readPreference('a95-booted', true)) setPhase('boot')
-    else openWelcome()
+    if (!initial && readPreference('a95-welcome') === 'off') setWindows([])
+    onResize()
     return () => window.removeEventListener('resize', onResize)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
-    if (phase !== 'desktop') return
+    if (phase !== 'desktop' || window.matchMedia('(prefers-reduced-motion: reduce)').matches || readPreference('a95-screensaver') === 'off') return
     let timer = window.setTimeout(() => setSaver(true), IDLE_MS)
     const reset = () => {
       window.clearTimeout(timer)
-      timer = window.setTimeout(() => setSaver(true), IDLE_MS)
+      if (!document.hidden && readPreference('a95-screensaver') !== 'off') timer = window.setTimeout(() => setSaver(true), IDLE_MS)
     }
     const events = ['pointermove', 'pointerdown', 'keydown', 'wheel'] as const
     events.forEach((e) => window.addEventListener(e, reset, { passive: true }))
+    document.addEventListener('visibilitychange', reset)
     return () => {
       window.clearTimeout(timer)
       events.forEach((e) => window.removeEventListener(e, reset))
+      document.removeEventListener('visibilitychange', reset)
     }
   }, [phase])
 
+  useEffect(() => { syncDocumentMetadata(route) }, [route])
+
   useEffect(() => {
-    const project = topWindow?.app === 'project' ? topWindow.arg : undefined
-    document.documentElement.lang = lang
-    const target = project ? projectPath(lang, project) : topWindow?.app === 'resume' ? `/cv?lang=${lang}` : homePath(lang)
-    if (window.location.pathname + window.location.search !== target) window.history.replaceState(null, '', target)
-    const name = project ? projects.find((p) => p.slug === project)?.name[lang] : undefined
-    document.title = name ? `${name} — ${projects.find(p=>p.slug===project)?.category[lang]} | ${profile.name}` : topWindow?.app === 'resume' ? `CV — ${profile.name}` : `${profile.name} — ${lang === 'es' ? 'Técnico de sistemas y redes en Reus' : 'Systems & network technician in Reus'}`
-  }, [topWindow?.app, topWindow?.arg, lang])
+    const restore = () => {
+      const next = parseDocumentRoute(window.location.pathname, window.location.search)
+      if (documentPath(next) === documentPath(routeRef.current)) return
+      routeRef.current = next
+      setRoute(next)
+      setLangState(next.lang)
+      setWindows(list => list.map(w => w.app === 'project' || w.app === 'resume' ? { ...w, minimized: true } : w))
+      if (next.slug) spawn('project', next.slug)
+      else if (next.cv) spawn('resume')
+    }
+    window.addEventListener('popstate', restore)
+    return () => window.removeEventListener('popstate', restore)
+  }, [spawn])
 
   useEffect(() => {
     if (!menu) return
@@ -338,7 +377,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
       case 'resume':
         return <ResumeApp winId={w.id} />
       case 'mail':
-        return <MailApp key={w.arg ?? 'none'} topic={w.arg} winId={w.id} />
+        return <MailApp topic={w.arg} winId={w.id} />
       case 'terminal':
         return <TerminalApp winId={w.id} />
       case 'mines':
@@ -386,6 +425,8 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
         </div>
 
         <main
+          id="desktop"
+          tabIndex={-1}
           className="desktop"
           aria-label={t('Escritorio', 'Desktop')}
           onPointerDown={(e) => {
@@ -416,6 +457,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
                 title={m.title}
                 icon={m.icon}
                 active={w.id === activeId}
+                blocked={phase !== 'desktop' || saver || (topWindow?.app === 'message' || topWindow?.app === 'shutdown') && w.id !== activeId}
                 resizable={!fixedSize.has(w.app)}
                 dialog={dialogs.has(w.app)}
                 onFocus={() => focus(w.id)}
@@ -477,6 +519,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
         {phase === 'off' && <OffScreen lang={lang} onWake={() => setPhase('boot')} />}
         {saver && phase === 'desktop' && <Screensaver onExit={() => setSaver(false)} />}
       </div>
+      <PortfolioDocument lang={route.lang} slug={route.slug} cv={route.cv} />
     </OsContext.Provider>
   )
 }

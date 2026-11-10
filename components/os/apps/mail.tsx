@@ -4,13 +4,17 @@ import { useState } from 'react'
 import { profile, projects } from '@/lib/content'
 import { OsIcon } from '../icons'
 import { useOs } from '../os-context'
+import { readPreference, writePreference } from '../storage'
+
+const draft = (key: string) => (typeof window !== 'undefined' ? readPreference(`a95-mail-${key}`, true) : null) ?? ''
+const keep = (key: string, value: string) => writePreference(`a95-mail-${key}`, value, true)
 
 export function MailApp({ topic, winId }: { topic?: string; winId: string }) {
   const { t, lang, message, close, play } = useOs()
   const project = projects.find((p) => p.slug === topic)
-  const [name, setName] = useState('')
+  const [name, setName] = useState(() => draft('name'))
   const [subject, setSubject] = useState(project ? `${t('Sobre', 'About')} ${project.name[lang]}` : t('Oportunidad junior / prácticas', 'Junior role / internship'))
-  const [body, setBody] = useState('')
+  const [body, setBody] = useState(() => draft('body'))
 
   const send = (e: React.FormEvent) => {
     e.preventDefault()
@@ -45,7 +49,7 @@ export function MailApp({ topic, winId }: { topic?: string; winId: string }) {
             <OsIcon name="globe" size={24} />
             GitHub
           </a>
-          <button type="button" className="big-tool" onClick={() => close(winId)}>
+          <button type="button" className="big-tool" onClick={() => { keep('name', ''); keep('body', ''); close(winId) }}>
             <OsIcon name="recycleEmpty" size={24} />
             {t('Descartar', 'Discard')}
           </button>
@@ -58,7 +62,7 @@ export function MailApp({ topic, winId }: { topic?: string; winId: string }) {
         </div>
         <div className="field-row">
           <label htmlFor={`${winId}-from`}>{t('De:', 'From:')}</label>
-          <input id={`${winId}-from`} type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('Tu nombre', 'Your name')} autoComplete="name" />
+          <input id={`${winId}-from`} type="text" value={name} onChange={(e) => { setName(e.target.value); keep('name', e.target.value) }} placeholder={t('Tu nombre', 'Your name')} autoComplete="name" />
         </div>
         <div className="field-row">
           <label htmlFor={`${winId}-subject`}>{t('Asunto:', 'Subject:')}</label>
@@ -72,13 +76,13 @@ export function MailApp({ topic, winId }: { topic?: string; winId: string }) {
         id={`${winId}-body`}
         className="mail-body"
         value={body}
-        onChange={(e) => setBody(e.target.value)}
+        onChange={(e) => { setBody(e.target.value); keep('body', e.target.value) }}
         required
         maxLength={4000}
         placeholder={t('Hola Amine, …', 'Hi Amine, …')}
       />
       <div className="status-bar">
-        <p className="status-bar-field status-grow">{t('Se envía desde tu aplicación de correo', 'Send using your mail application')}</p>
+        <p className="status-bar-field status-grow">{t('Se envía desde tu aplicación de correo · El borrador se conserva en esta sesión', 'Send using your mail application · Draft kept for this session')}</p>
         <p className="status-bar-field">{body.length}/4000</p>
       </div>
     </form>

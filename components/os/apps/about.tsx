@@ -24,16 +24,16 @@ export function AboutApp({ winId }: { winId: string }) {
 
   return (
     <div className="dialog-layout">
-      <menu role="tablist" className="os-tabs">
+      <menu role="tablist" aria-label={t('Propiedades del sistema', 'System properties')} className="os-tabs">
         {tabs.map(([id, label]) => (
-          <li role="tab" key={id} aria-selected={tab === id}>
-            <button type="button" className="tab-button" onClick={() => setTab(id)}>
+          <li role="presentation" key={id}>
+            <button type="button" role="tab" id={`${winId}-${id}-tab`} aria-controls={`${winId}-panel`} aria-selected={tab===id} tabIndex={tab===id?0:-1} className="tab-button" onKeyDown={e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const i=tabs.findIndex(([v])=>v===tab);const next=e.key==='Home'?0:e.key==='End'?tabs.length-1:(i+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;setTab(tabs[next][0]);document.getElementById(`${winId}-${tabs[next][0]}-tab`)?.focus()}}} onClick={() => setTab(id)}>
               {label}
             </button>
           </li>
         ))}
       </menu>
-      <div className="window tab-panel" role="tabpanel">
+      <div className="window tab-panel" role="tabpanel" id={`${winId}-panel`} aria-labelledby={`${winId}-${tab}-tab`}>
         <div className="window-body tab-panel-body">
           {tab === 'general' && (
             <div className="sysprops">

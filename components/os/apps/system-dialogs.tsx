@@ -114,19 +114,19 @@ export function DisplayProperties({ winId }: { winId: string }) {
 
   return (
     <div className="dialog-layout">
-      <menu role="tablist" className="os-tabs">
-        <li role="tab" aria-selected={tab === 'background'}>
-          <button type="button" className="tab-button" onClick={() => setTab('background')}>
+      <menu role="tablist" aria-label={t('Pantalla', 'Display')} className="os-tabs" onKeyDown={e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const next=e.key==='Home'?'background':e.key==='End'?'saver':tab==='background'?'saver':'background';setTab(next);document.getElementById(`${winId}-${next}-tab`)?.focus()}}}>
+        <li role="presentation">
+          <button type="button" role="tab" id={`${winId}-background-tab`} aria-controls={`${winId}-panel`} aria-selected={tab==='background'} tabIndex={tab==='background'?0:-1} className="tab-button" onClick={() => setTab('background')}>
             {t('Fondo', 'Background')}
           </button>
         </li>
-        <li role="tab" aria-selected={tab === 'saver'}>
-          <button type="button" className="tab-button" onClick={() => setTab('saver')}>
+        <li role="presentation">
+          <button type="button" role="tab" id={`${winId}-saver-tab`} aria-controls={`${winId}-panel`} aria-selected={tab==='saver'} tabIndex={tab==='saver'?0:-1} className="tab-button" onClick={() => setTab('saver')}>
             {t('Protector de pantalla', 'Screen Saver')}
           </button>
         </li>
       </menu>
-      <div className="window tab-panel" role="tabpanel">
+      <div className="window tab-panel" role="tabpanel" id={`${winId}-panel`} aria-labelledby={`${winId}-${tab}-tab`}>
         <div className="window-body tab-panel-body display-body">
           <div className="monitor" aria-hidden="true">
             <div className={`monitor-screen wallpaper-${tab === 'saver' ? 'saver' : choice}`} />

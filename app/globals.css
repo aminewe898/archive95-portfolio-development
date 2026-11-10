@@ -752,3 +752,16 @@ body:has(.portfolio-document:target) .os-root, body:has(.portfolio-document:targ
   .snake-dpad { grid-template-columns:repeat(4,40px); grid-template-rows:40px; }
   .snake-dpad button { grid-column:auto; grid-row:auto; }
 }
+/* Audit pass (A02, A07): Welcome sizes to its content inside one scrolling body; larger hit areas; darker helper text. */
+@media (max-width:640px), (max-height:550px) {
+ .welcome-main { flex:0 0 auto; min-height:0; }
+ .welcome-tip { flex:0 0 auto; min-height:0; overflow:visible; }
+ .welcome-buttons { flex-shrink:0; }
+ .welcome-foot { margin-top:0; }
+}
+@media (max-width:640px) { .welcome { padding-bottom:48px; } }
+.project-view-switch > span { color:#333; }
+.tray-button { position:relative; min-width:24px; justify-content:center; }
+.tray-button::before { content:''; position:absolute; inset:-6px 0; }
+.os-window .title-bar-controls button { position:relative; }
+.os-window .title-bar-controls button::before { content:''; position:absolute; inset:-5px -1px; }
