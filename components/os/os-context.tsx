@@ -21,8 +21,12 @@ export type AppId =
   | 'run'
   | 'shutdown'
   | 'message'
+  | 'ie'
+  | 'paint'
+  | 'calc'
+  | 'taskman'
 
-export type Wallpaper = 'teal' | 'clouds' | 'pattern' | 'night'
+export type Wallpaper = 'teal' | 'clouds' | 'pattern' | 'night' | 'custom'
 
 export type MessageSpec = { title: string; text: string; kind?: 'info' | 'warning' | 'question' }
 
@@ -48,6 +52,7 @@ export type OsApi = {
   message: (spec: MessageSpec) => void
   wallpaper: Wallpaper
   setWallpaper: (w: Wallpaper) => void
+  setCustomWallpaper: (image: string) => void
   volume: number
   setVolume: (value: number) => void
   soundOn: boolean

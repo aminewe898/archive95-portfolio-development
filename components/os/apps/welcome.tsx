@@ -19,6 +19,7 @@ export function WelcomeApp({ winId }: { winId: string }) {
     ),
     t('Haz doble clic en RELAY.EXE para abrir el proyecto principal: un service desk autoalojado que convierte notas de voz en tickets.', 'Double-click RELAY.EXE to open the flagship project: a self-hosted service desk that turns voice notes into tickets.'),
     t('Abre el MS-DOS Prompt y escribe HELP. Todo el portfolio se puede recorrer desde la línea de comandos.', 'Open the MS-DOS Prompt and type HELP. The whole portfolio can be explored from the command line.'),
+    t('Internet Explorer navega de verdad: abre Wikipedia o viaja a la web de 1996 con el selector de año.', 'Internet Explorer really browses: open Wikipedia, or travel to the web of 1996 with the year selector.'),
     t('Haz clic derecho en el escritorio para cambiar el fondo o crear un documento de texto.', 'Right-click the desktop to change the wallpaper or create a text document.'),
     t('La Papelera de reciclaje contiene lo que este portfolio decidió no afirmar. Échale un vistazo.', 'The Recycle Bin holds what this portfolio chose not to claim. Take a look.'),
     t('¿Atascado? Pulsa Inicio → Ejecutar… y escribe el nombre de un programa, como WINMINE o CV.', 'Stuck? Press Start → Run… and type a program name such as WINMINE or CV.'),

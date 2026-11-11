@@ -47,7 +47,7 @@ export function RunDialog({ winId }: { winId: string }) {
         <label htmlFor={`${winId}-input`}>{t('Abrir:', 'Open:')}</label>
         <input id={`${winId}-input`} list={`${winId}-list`} value={value} onChange={(e) => setValue(e.target.value)} autoFocus autoComplete="off" />
         <datalist id={`${winId}-list`}>
-          {['relay', 'cv', 'winmine', 'cmd', 'notepad', 'outlook', 'explorer', 'control', 'github'].map((v) => (
+          {['relay', 'cv', 'iexplore', 'mspaint', 'calc', 'winmine', 'cmd', 'notepad', 'outlook', 'explorer', 'control', 'taskman', 'github'].map((v) => (
             <option key={v} value={v} />
           ))}
         </datalist>

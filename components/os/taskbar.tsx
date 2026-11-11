@@ -7,6 +7,8 @@ import { OsIcon, type IconName } from './icons'
 import { useOs, type AppId, type OsWindow } from './os-context'
 
 type TaskItem = { win: OsWindow; title: string; icon: IconName }
+export type ArrangeKind = 'cascade' | 'tile-h' | 'tile-v' | 'minimize'
+type BarMenu = { x: number; taskId?: string } | null
 
 type StartEntry = { label: string; icon: IconName; onSelect?: () => void; children?: StartEntry[] }
 
@@ -107,21 +109,23 @@ function StartMenu({ entries, onClose }: { entries: StartEntry[]; onClose: () =>
   )
 }
 
-export function Taskbar({ tasks, activeId, onTask }: { tasks: TaskItem[]; activeId: string | null; onTask: (id: string) => void }) {
+export function Taskbar({ tasks, activeId, onTask, onArrange, onMinimize }: { tasks: TaskItem[]; activeId: string | null; onTask: (id: string) => void; onArrange: (kind: ArrangeKind) => void; onMinimize: (id: string) => void }) {
   const os = useOs()
   const { t, lang } = os
   const [volumeOpen, setVolumeOpen] = useState(false)
   const [startOpen, setStartOpen] = useState(false)
+  const [barMenu, setBarMenu] = useState<BarMenu>(null)
   const barRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!startOpen && !volumeOpen) return
+    if (!startOpen && !volumeOpen && !barMenu) return
     const close = (e: PointerEvent) => {
       if (!barRef.current?.contains(e.target as Node)) { setStartOpen(false); setVolumeOpen(false) }
+      if (!(e.target as HTMLElement).closest?.('.taskbar-menu')) setBarMenu(null)
     }
     window.addEventListener('pointerdown', close)
     return () => window.removeEventListener('pointerdown', close)
-  }, [startOpen, volumeOpen])
+  }, [startOpen, volumeOpen, barMenu])
 
   const go = (app: AppId, arg?: string) => () => os.open(app, arg)
   const entries: StartEntry[] = [
@@ -130,9 +134,12 @@ export function Taskbar({ tasks, activeId, onTask }: { tasks: TaskItem[]; active
       icon: 'folder',
       children: [
         { label: t('Explorador de proyectos', 'Project Explorer'), icon: 'explorer', onSelect: go('projects') },
+        { label: 'Internet Explorer', icon: 'ie', onSelect: go('ie') },
         { label: 'MS-DOS Prompt', icon: 'dos', onSelect: go('terminal') },
         { label: 'Outlook Express', icon: 'mail', onSelect: go('mail') },
         { label: t('Bloc de notas', 'Notepad'), icon: 'notepad', onSelect: go('notepad') },
+        { label: 'Paint', icon: 'paint', onSelect: go('paint') },
+        { label: t('Calculadora', 'Calculator'), icon: 'calc', onSelect: go('calc') },
         { label: t('Buscaminas', 'Minesweeper'), icon: 'mines', onSelect: go('mines') },
         { label: 'Snake', icon: 'snake', onSelect: go('snake') },
       ],
@@ -156,6 +163,7 @@ export function Taskbar({ tasks, activeId, onTask }: { tasks: TaskItem[]; active
       ],
     },
     { label: 'GitHub', icon: 'globe', onSelect: () => window.open(profile.github, '_blank', 'noopener') },
+    { label: t('Cerrar programa…', 'Close Program…'), icon: 'taskman', onSelect: go('taskman') },
     { label: t('Ayuda', 'Help'), icon: 'help', onSelect: go('welcome') },
     { label: t('Ejecutar…', 'Run…'), icon: 'run', onSelect: go('run') },
     { label: '—', icon: 'file' },
@@ -163,7 +171,36 @@ export function Taskbar({ tasks, activeId, onTask }: { tasks: TaskItem[]; active
   ]
 
   return (
-    <div className="taskbar" ref={barRef}>
+    <div className="taskbar" ref={barRef} onContextMenu={(e) => {
+      if ((e.target as HTMLElement).closest('.start-menu, .volume-popup, .taskbar-menu, input')) return
+      e.preventDefault()
+      setStartOpen(false)
+      const taskId = (e.target as HTMLElement).closest<HTMLElement>('[data-task-id]')?.dataset.taskId
+      setBarMenu({ x: Math.max(2, Math.min(e.clientX, window.innerWidth - 210)), taskId })
+    }}>
+      {barMenu && (() => {
+        const task = tasks.find((item) => item.win.id === barMenu.taskId)
+        const pick = (action: () => void) => () => { setBarMenu(null); action() }
+        return (
+          <div className="os-menu taskbar-menu" role="menu" style={{ left: barMenu.x }} onKeyDown={(e) => e.key === 'Escape' && setBarMenu(null)}>
+            {task ? <>
+              <button type="button" role="menuitem" onClick={pick(() => onTask(task.win.id))} disabled={!task.win.minimized && activeId === task.win.id}>{t('Restaurar', 'Restore')}</button>
+              <button type="button" role="menuitem" onClick={pick(() => onMinimize(task.win.id))} disabled={task.win.minimized}>{t('Minimizar', 'Minimize')}</button>
+              <hr className="menu-separator" />
+              <button type="button" role="menuitem" onClick={pick(() => os.close(task.win.id))}><b>{t('Cerrar', 'Close')}</b></button>
+            </> : <>
+              <button type="button" role="menuitem" onClick={pick(() => onArrange('cascade'))}>{t('Cascada', 'Cascade')}</button>
+              <button type="button" role="menuitem" onClick={pick(() => onArrange('tile-h'))}>{t('Mosaico horizontal', 'Tile Horizontally')}</button>
+              <button type="button" role="menuitem" onClick={pick(() => onArrange('tile-v'))}>{t('Mosaico vertical', 'Tile Vertically')}</button>
+              <hr className="menu-separator" />
+              <button type="button" role="menuitem" onClick={pick(() => onArrange('minimize'))}>{t('Minimizar todas las ventanas', 'Minimize All Windows')}</button>
+              <hr className="menu-separator" />
+              <button type="button" role="menuitem" onClick={pick(() => os.open('taskman'))}>{t('Cerrar programa…', 'Close Program…')}</button>
+              <button type="button" role="menuitem" onClick={pick(() => os.open('display'))}>{t('Propiedades', 'Properties')}</button>
+            </>}
+          </div>
+        )
+      })()}
       {startOpen && <StartMenu entries={entries} onClose={() => setStartOpen(false)} />}
       <button
         type="button"
@@ -181,7 +218,7 @@ export function Taskbar({ tasks, activeId, onTask }: { tasks: TaskItem[]; active
       <span className="taskbar-divider" aria-hidden="true" />
       <nav className="task-list" aria-label={t('Ventanas abiertas', 'Open windows')}>
         {tasks.map(({ win, title, icon }) => (
-          <button key={win.id} type="button" className={`task-button ${activeId === win.id && !win.minimized ? 'is-pressed' : ''}`} aria-label={title} aria-pressed={activeId === win.id && !win.minimized} onClick={() => onTask(win.id)} title={title}>
+          <button key={win.id} type="button" data-task-id={win.id} className={`task-button ${activeId === win.id && !win.minimized ? 'is-pressed' : ''}`} aria-label={title} aria-pressed={activeId === win.id && !win.minimized} onClick={() => onTask(win.id)} title={title}>
             <OsIcon name={icon} size={16} />
             <span>{title}</span>
           </button>

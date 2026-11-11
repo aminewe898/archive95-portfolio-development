@@ -13,13 +13,17 @@ const ResumeApp = dynamic(() => import('./apps/resume').then(m => m.ResumeApp))
 const SkillsApp = dynamic(() => import('./apps/skills').then(m => m.SkillsApp))
 import { DisplayProperties, MessageBox, RunDialog, ShutdownDialog, wallpaperOptions } from './apps/system-dialogs'
 const TerminalApp = dynamic(() => import('./apps/terminal').then(m => m.TerminalApp))
+const InternetApp = dynamic(() => import('./apps/internet').then(m => m.InternetApp))
+const PaintApp = dynamic(() => import('./apps/paint').then(m => m.PaintApp))
+const CalculatorApp = dynamic(() => import('./apps/calculator').then(m => m.CalculatorApp))
+const TaskManager = dynamic(() => import('./apps/task-manager').then(m => m.TaskManager))
 import { WelcomeApp } from './apps/welcome'
 import { BootScreen, OffScreen, Screensaver } from './boot'
 import { OsIcon, type IconName } from './icons'
 import { OsContext, windowId, type AppId, type MessageSpec, type OsApi, type OsWindow, type Wallpaper } from './os-context'
 import { projectAppName, projectIcon } from './programs'
 import { playSound, type SoundName } from './sound'
-import { Taskbar } from './taskbar'
+import { Taskbar, type ArrangeKind } from './taskbar'
 import { useOpenGesture } from './use-open-gesture'
 import { WindowFrame as WindowFrameLazy } from './window-frame'
 
@@ -49,11 +53,30 @@ const sizes: Record<AppId, [number, number]> = {
   run: [390, 196],
   shutdown: [370, 206],
   message: [400, 170],
+  ie: [760, 540],
+  paint: [740, 560],
+  calc: [262, 262],
+  taskman: [380, 320],
 }
 
-const dialogs = new Set<AppId>(['run', 'shutdown', 'message', 'display', 'about'])
-const fixedSize = new Set<AppId>([...dialogs, 'mines', 'snake', 'welcome'])
-const singletons = new Set<AppId>(['project', 'mail'])
+const dialogs = new Set<AppId>(['run', 'shutdown', 'message', 'display', 'about', 'taskman'])
+const fixedSize = new Set<AppId>([...dialogs, 'mines', 'snake', 'welcome', 'calc'])
+const singletons = new Set<AppId>(['project', 'mail', 'ie'])
+
+const rectOf = (selector: string) => document.querySelector(selector)?.getBoundingClientRect()
+const windowRect = (id: string) => rectOf(`[data-win-id="${CSS.escape(id)}"]`)
+const taskRect = (id: string) => rectOf(`[data-task-id="${CSS.escape(id)}"]`)
+
+// Windows 95 draws a title bar flying between a window and its taskbar button.
+function zoomTitle(from: DOMRect | undefined, to: DOMRect | undefined) {
+  if (!from || !to || !from.width || !to.width || window.matchMedia('(prefers-reduced-motion: reduce), (max-width: 640px)').matches) return
+  const el = document.createElement('div')
+  el.className = 'zoom-title'
+  document.querySelector('.os-root')?.append(el)
+  const frame = (r: DOMRect) => ({ left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px` })
+  const animation = el.animate([frame(from), frame(to)], { duration: 220, easing: 'steps(8)' })
+  animation.onfinish = animation.oncancel = () => el.remove()
+}
 
 type DesktopIcon = { id: string; label: string; icon: IconName; app: AppId; arg?: string }
 
@@ -78,6 +101,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
     setLangState(next.lang)
   }, [])
   const [wallpaper, setWallpaperState] = useState<Wallpaper>('teal')
+  const [customWallpaper, setCustomWallpaperState] = useState<string | null>(null)
   const [soundOn, setSoundOnState] = useState(false)
   const [volume, setVolumeState] = useState(0.5)
   const volumeRef = useRef(volume)
@@ -124,8 +148,8 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
         const existing = list.find((w) => w.id === id)
         zRef.current += 1
         if (existing) return list.map((w) => (w.id === id ? { ...w, arg, z: zRef.current, minimized: false } : w))
-        const W = window.innerWidth
-        const H = window.innerHeight - TASKBAR
+        const W = window.innerWidth || 1024
+        const H = (window.innerHeight || 768) - TASKBAR
         const [dw, dh] = sizes[app]
         const w = Math.min(dw, W - 8)
         const h = Math.min(dh, H - 8)
@@ -163,6 +187,29 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
   }, [navigate])
   const patch = useCallback((id: string, p: Partial<OsWindow>) => setWindows((list) => list.map((w) => (w.id === id ? { ...w, ...p } : w))), [])
 
+  const minimize = useCallback((id: string) => {
+    zoomTitle(windowRect(id), taskRect(id))
+    patch(id, { minimized: true })
+  }, [patch])
+
+  const arrange = useCallback((kind: ArrangeKind) => setWindows((list) => {
+    if (kind === 'minimize') return list.map((w) => ({ ...w, minimized: true }))
+    const W = window.innerWidth
+    const H = window.innerHeight - TASKBAR
+    const shown = list.filter((w) => !w.minimized && !dialogs.has(w.app)).sort((a, b) => a.z - b.z)
+    if (!shown.length || W <= 640) return list
+    return list.map((w) => {
+      const i = shown.indexOf(w)
+      if (i < 0) return w
+      const fixed = fixedSize.has(w.app)
+      if (kind === 'cascade') return { ...w, maximized: false, x: 8 + i * 24, y: 8 + i * 24, ...(fixed ? {} : { w: Math.min(w.w, Math.round(W * 0.72)), h: Math.min(w.h, Math.round(H * 0.72)) }) }
+      const across = kind === 'tile-v'
+      const cell = Math.floor((across ? W : H) / shown.length)
+      const place = across ? { x: i * cell, y: 0 } : { x: 0, y: i * cell }
+      return { ...w, maximized: false, ...place, ...(fixed ? {} : across ? { w: cell, h: H } : { w: W, h: cell }) }
+    })
+  }), [])
+
   const message = useCallback(
     (spec: MessageSpec) => {
       play(spec.kind === 'warning' ? 'error' : 'ding')
@@ -178,6 +225,12 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
   const setWallpaper = useCallback((w: Wallpaper) => {
     setWallpaperState(w)
     writePreference('a95-wallpaper', w)
+  }, [])
+
+  // A picture from Paint lasts for this visit only; it is not stored.
+  const setCustomWallpaper = useCallback((image: string) => {
+    setCustomWallpaperState(image)
+    setWallpaperState('custom')
   }, [])
 
   const setSoundOn = useCallback((on: boolean) => {
@@ -210,7 +263,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
     setViewportH(window.innerHeight)
     const onResize = () => {
       setViewportH(window.innerHeight)
-      if (window.innerWidth <= 640) return
+      if (window.innerWidth <= 640) return // also covers a hidden, zero-size viewport
       setWindows(list => list.map(w => {
         const width = Math.min(w.w, window.innerWidth - 8)
         const height = Math.min(w.h, window.innerHeight - TASKBAR - 8)
@@ -295,6 +348,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
       message,
       wallpaper,
       setWallpaper,
+      setCustomWallpaper,
       volume,
       setVolume,
       soundOn,
@@ -309,12 +363,13 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
         setRecycleEmptied(true)
       },
     }),
-    [lang, t, open, close, message, wallpaper, setWallpaper, volume, setVolume, soundOn, setSoundOn, play, setLang, power, recycleEmptied],
+    [lang, t, open, close, message, wallpaper, setWallpaper, setCustomWallpaper, volume, setVolume, soundOn, setSoundOn, play, setLang, power, recycleEmptied],
   )
 
   const icons: DesktopIcon[] = [
     { id: 'about', label: t('Mi PC', 'My Computer'), icon: 'computer', app: 'about' },
     { id: 'projects', label: t('Proyectos', 'Projects'), icon: 'folder', app: 'projects' },
+    { id: 'ie', label: 'Internet Explorer', icon: 'ie', app: 'ie' },
     { id: 'relay', label: 'RELAY.EXE', icon: 'automation', app: 'project', arg: 'relay' },
     { id: 'resume', label: 'RESUME.DOC', icon: 'doc', app: 'resume' },
     { id: 'mail', label: t('Bandeja de entrada', 'Inbox'), icon: 'mail', app: 'mail' },
@@ -323,6 +378,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
     { id: 'skills', label: t('Panel de control', 'Control Panel'), icon: 'settings', app: 'skills' },
     { id: 'mines', label: t('Buscaminas', 'Minesweeper'), icon: 'mines', app: 'mines' },
     { id: 'snake', label: 'SNAKE.EXE', icon: 'snake', app: 'snake' },
+    { id: 'paint', label: 'Paint', icon: 'paint', app: 'paint' },
     { id: 'recycle', label: t('Papelera', 'Recycle Bin'), icon: recycleEmptied ? 'recycleEmpty' : 'recycleFull', app: 'recycle' },
   ]
 
@@ -361,8 +417,19 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
         return { title: t('Apagar Archive95', 'Shut Down Archive95'), icon: 'power' }
       case 'message':
         return { title: w.message?.title ?? 'Archive95', icon: 'info' }
+      case 'ie':
+        return { title: 'Internet Explorer', icon: 'ie' }
+      case 'paint':
+        return { title: t('Sin título — Paint', 'untitled — Paint'), icon: 'paint' }
+      case 'calc':
+        return { title: t('Calculadora', 'Calculator'), icon: 'calc' }
+      case 'taskman':
+        return { title: t('Cerrar programa', 'Close Program'), icon: 'taskman' }
     }
   }
+
+  const ordered = [...windows].sort((a, b) => a.z - b.z)
+  const tasks = windows.filter((w) => w.app !== 'message').map((w) => ({ win: w, ...meta(w) }))
 
   const renderApp = (w: OsWindow) => {
     switch (w.app) {
@@ -398,15 +465,21 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
         return <ShutdownDialog winId={w.id} />
       case 'message':
         return w.message ? <MessageBox spec={w.message} winId={w.id} /> : null
+      case 'ie':
+        return <InternetApp winId={w.id} url={w.arg} />
+      case 'paint':
+        return <PaintApp winId={w.id} />
+      case 'calc':
+        return <CalculatorApp />
+      case 'taskman':
+        return <TaskManager winId={w.id} tasks={tasks.map((task) => ({ id: task.win.id, title: task.title }))} onSwitch={focus} />
     }
   }
 
-  const ordered = [...windows].sort((a, b) => a.z - b.z)
-  const tasks = windows.filter((w) => w.app !== 'message').map((w) => ({ win: w, ...meta(w) }))
 
   return (
     <OsContext.Provider value={api}>
-      <div className={`os-root wallpaper-${wallpaper}`} lang={lang}>
+      <div className={`os-root wallpaper-${wallpaper}`} lang={lang} style={wallpaper === 'custom' && customWallpaper ? { backgroundImage: `url(${customWallpaper})` } : undefined}>
         <div className="sr-only">
           <h1>
             {profile.name} — {profile.role[lang]}
@@ -461,7 +534,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
                 resizable={!fixedSize.has(w.app)}
                 dialog={dialogs.has(w.app)}
                 onFocus={() => focus(w.id)}
-                onMinimize={() => patch(w.id, { minimized: true })}
+                onMinimize={() => minimize(w.id)}
                 onToggleMaximize={() => patch(w.id, { maximized: !w.maximized })}
                 onClose={() => {
                   play('click')
@@ -510,9 +583,14 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
           onTask={(id) => {
             const w = windows.find((x) => x.id === id)
             if (!w) return
-            if (w.id === activeId && !w.minimized) patch(id, { minimized: true })
-            else focus(id)
+            if (w.id === activeId && !w.minimized) minimize(id)
+            else {
+              if (w.minimized) zoomTitle(taskRect(id), w.maximized ? new DOMRect(0, 0, window.innerWidth, 20) : new DOMRect(w.x, w.y, w.w, 20))
+              focus(id)
+            }
           }}
+          onArrange={arrange}
+          onMinimize={minimize}
         />
 
         {phase === 'boot' && <BootScreen lang={lang} onDone={finishBoot} />}

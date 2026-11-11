@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "start": "next start",
     "test:demo": "node scripts/test-playback.mjs",
-    "test:snake": "node scripts/test-snake.mjs"
+    "test:snake": "node scripts/test-snake.mjs",
+    "test:sol": "node scripts/test-solitaire.mjs"
   },
   "dependencies": {
     "98.css": "^0.1.21",
