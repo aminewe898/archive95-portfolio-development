@@ -83,6 +83,10 @@ Not obtained: the *Introducing Microsoft Windows 95* manual (file too large to f
 | P8 | Date/Time Properties shows the current time zone on a world map. | GUIdebook | No map |
 | P9 | The task list reached with Ctrl+Alt+Del is titled "Close Program". | GUIdebook | Already correct |
 
-## What this pass implements
+## What is implemented
 
-W1 to W8, T3 to T5, D3 to D7, P1 and P2. The rest of section 5 (Solitaire options and scoring, more Paint tools, the time-zone map) is still open.
+First pass: W1 to W8, T3 to T5, D3 to D7, P1 and P2.
+
+Second pass: P3 to P8. Solitaire has Draw One and Draw Three, Standard, Vegas and no scoring, a timed game, Undo, four card backs and the bouncing-cards win; its scoring is covered by `pnpm test:sol`. Paint has the six shape tools plus Pick Color and Airbrush, Shift to constrain, an Image menu and Set As Wallpaper (Tiled or Centered). Date/Time has a Time Zone tab with a simplified world map.
+
+Still different from the original: Solitaire card backs are new designs, not Susan Kare's; Solitaire has no Keep Score running total or outline dragging; Paint has no selection tools, Text or Magnifier, and its Curve bends once instead of twice.

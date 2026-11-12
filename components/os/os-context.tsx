@@ -56,7 +56,7 @@ export type OsApi = {
   message: (spec: MessageSpec) => void
   wallpaper: Wallpaper
   setWallpaper: (w: Wallpaper) => void
-  setCustomWallpaper: (image: string) => void
+  setCustomWallpaper: (image: string, mode?: 'tiled' | 'centered') => void
   resizeWindow: (id: string, w: number, h: number) => void
   /** False (the Windows 95 default) drags an outline; true redraws the window while it moves. */
   fullDrag: boolean

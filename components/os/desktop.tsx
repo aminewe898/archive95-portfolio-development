@@ -64,7 +64,7 @@ const sizes: Record<AppId, [number, number]> = {
   taskman: [380, 320],
   computer: [560, 400],
   find: [540, 400],
-  datetime: [440, 340],
+  datetime: [440, 380],
   sol: [590, 520],
 }
 
@@ -114,7 +114,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
     setLangState(next.lang)
   }, [])
   const [wallpaper, setWallpaperState] = useState<Wallpaper>('teal')
-  const [customWallpaper, setCustomWallpaperState] = useState<string | null>(null)
+  const [customWallpaper, setCustomWallpaperState] = useState<{ image: string; mode: 'tiled' | 'centered' } | null>(null)
   const [soundOn, setSoundOnState] = useState(false)
   const [volume, setVolumeState] = useState(0.5)
   const volumeRef = useRef(volume)
@@ -278,8 +278,8 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
   }, [])
 
   // A picture from Paint lasts for this visit only; it is not stored.
-  const setCustomWallpaper = useCallback((image: string) => {
-    setCustomWallpaperState(image)
+  const setCustomWallpaper = useCallback((image: string, mode: 'tiled' | 'centered' = 'centered') => {
+    setCustomWallpaperState({ image, mode })
     setWallpaperState('custom')
   }, [])
 
@@ -563,7 +563,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
 
   return (
     <OsContext.Provider value={api}>
-      <div className={`os-root wallpaper-${wallpaper}`} lang={lang} style={wallpaper === 'custom' && customWallpaper ? { backgroundImage: `url(${customWallpaper})` } : undefined}>
+      <div className={`os-root wallpaper-${wallpaper}`} lang={lang} style={wallpaper === 'custom' && customWallpaper ? { backgroundImage: `url(${customWallpaper.image})`, backgroundRepeat: customWallpaper.mode === 'tiled' ? 'repeat' : 'no-repeat', backgroundPosition: customWallpaper.mode === 'tiled' ? '0 0' : 'center', backgroundSize: 'auto' } : undefined}>
         <div className="sr-only">
           <h1>
             {profile.name} — {profile.role[lang]}

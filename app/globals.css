@@ -945,3 +945,20 @@ body.is-window-gesture { user-select: none; }
   .mines-grid { --cell: 28px; grid-template-columns: repeat(var(--cols, 8), var(--cell)); grid-template-rows: repeat(var(--rows, 8), var(--cell)); }
 }
 .mines .menu-bar { align-self: stretch; }
+
+/* ---------- Solitaire options, Paint tools, time-zone map ---------- */
+.sol-waste { box-shadow: none; }
+.sol-fan { position: absolute; left: 0; top: 0; }
+.sol-waste.is-fanned .sol-fan { left: calc(var(--fan) * 14px); }
+.card:disabled { color: #000; text-shadow: none; }
+.card.is-red:disabled { color: #d00000; }
+.sol-win { position: absolute; inset: 0; z-index: 8; pointer-events: none; }
+.sol-table { position: relative; }
+.sol.back-crimson .card-back { background: #800000 repeating-conic-gradient(#800000 0 25%, #d04040 0 50%) 0 0 / 6px 6px; }
+.sol.back-forest .card-back { background: #004000 repeating-linear-gradient(45deg, #004000 0 3px, #20a020 3px 6px); }
+.sol.back-sunset .card-back { background: linear-gradient(#000080 0 35%, #ff8000 35% 60%, #ffff00 60% 70%, #800080 70%); }
+.paint-tools > button svg { image-rendering: pixelated; }
+.datetime .tab-panel { padding: 8px; overflow: hidden; }
+.datetime-zone-tab { display: flex; flex-direction: column; gap: 8px; height: 100%; }
+.datetime-zone-tab select { width: 100%; }
+.datetime-map { flex: 1; min-height: 110px; width: 100%; box-shadow: inset -1px -1px #fff, inset 1px 1px #808080, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a; padding: 2px; background: #000080; }

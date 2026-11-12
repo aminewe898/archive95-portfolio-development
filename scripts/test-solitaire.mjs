@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict'
-import { canFound, canStack, deal, draw, move, toFoundation } from '../components/os/games/solitaire-engine.ts'
+import { canFound, canRecycle, canStack, deal, draw, move, tick, toFoundation, winBonus } from '../components/os/games/solitaire-engine.ts'
 
 const card = (suit, rank, up = true) => ({ suit, rank, up })
-const empty = () => ({ stock: [], waste: [], foundations: [[], [], [], []], tableau: [[], [], [], [], [], [], []], moves: 0, won: false })
+const empty = () => ({ stock: [], waste: [], foundations: [[], [], [], []], tableau: [[], [], [], [], [], [], []], moves: 0, won: false, score: 0, passes: 0 })
 
 // Deal: 52 unique cards, 1..7 per column, only the top card face up, 24 in the stock.
 let seed = 7
@@ -75,4 +75,55 @@ assert.ok(won?.won)
 assert.equal(move(won, { pile: 'foundation', index: 0 }, { pile: 'tableau', index: 1 }), null, 'a finished game is frozen')
 assert.equal(draw(won), won)
 
-console.log('Solitaire checks passed: deal, draw, recycle, stacking, runs, foundations, win.')
+
+// Draw Three turns three cards and leaves the third one on top.
+const three = { draw: 3, scoring: 'standard' }
+const g3 = deal(random, three)
+const d3 = draw(g3, three)
+assert.equal(d3.waste.length, 3)
+assert.equal(d3.stock.length, 21)
+assert.deepEqual(d3.waste.map((c) => c.rank + '-' + c.suit), g3.stock.slice(-3).reverse().map((c) => c.rank + '-' + c.suit))
+
+// Standard scoring: 10 to a foundation, 5 from the deck to a column, 5 for turning a card, 15 lost coming back.
+const std = { draw: 1, scoring: 'standard' }
+const s1 = empty()
+s1.waste = [card(2, 1)]
+assert.equal(toFoundation(s1, { pile: 'waste' }, std).score, 10)
+const s2 = empty()
+s2.waste = [card(1, 12)]
+s2.tableau[0] = [card(0, 13)]
+assert.equal(move(s2, { pile: 'waste' }, { pile: 'tableau', index: 0 }, std).score, 5)
+const s3 = empty()
+s3.tableau[0] = [card(3, 9, false), card(1, 6)]
+s3.tableau[1] = [card(3, 7)]
+assert.equal(move(s3, { pile: 'tableau', index: 0, card: 1 }, { pile: 'tableau', index: 1 }, std).score, 5, 'turning over a card earns 5')
+const s4 = { ...empty(), score: 40, foundations: [[card(1, 1), card(1, 2)], [], [], []] }
+s4.tableau[0] = [card(0, 3)]
+assert.equal(move(s4, { pile: 'foundation', index: 0 }, { pile: 'tableau', index: 0 }, std).score, 25)
+
+// Recycling the deck: 100 points in Draw One, never below zero; 20 per pass after the third in Draw Three.
+const r1 = { ...empty(), score: 130, waste: [card(0, 5)] }
+assert.equal(draw(r1, std).score, 30)
+assert.equal(draw({ ...r1, score: 40 }, std).score, 0)
+assert.equal(draw({ ...r1, passes: 0 }, three).score, 130)
+assert.equal(draw({ ...r1, passes: 2 }, three).score, 110)
+
+// Vegas: 52 down at the deal, 5 a card, one pass in Draw One and three in Draw Three.
+const vegas = { draw: 1, scoring: 'vegas' }
+assert.equal(deal(random, vegas).score, -52)
+const v1 = { ...empty(), score: -52, waste: [card(2, 1)] }
+assert.equal(toFoundation(v1, { pile: 'waste' }, vegas).score, -47)
+assert.equal(canRecycle(v1, vegas), false)
+assert.equal(draw(v1, vegas), v1, 'no second pass in Vegas Draw One')
+assert.equal(canRecycle({ ...v1, passes: 1 }, { draw: 3, scoring: 'vegas' }), true)
+assert.equal(canRecycle({ ...v1, passes: 2 }, { draw: 3, scoring: 'vegas' }), false)
+
+// Timed games: 2 points every 10 seconds; the bonus is 700,000 over the seconds, nothing at 30 or less.
+assert.equal(tick({ ...empty(), score: 50 }, 10, std).score, 48)
+assert.equal(tick({ ...empty(), score: 50 }, 11, std).score, 50)
+assert.equal(tick({ ...empty(), score: 1 }, 20, std).score, 0)
+assert.equal(winBonus(100, std), 7000)
+assert.equal(winBonus(30, std), 0)
+assert.equal(winBonus(100, vegas), 0)
+
+console.log('Solitaire checks passed: deal, draw one and three, recycle, stacking, runs, foundations, win, standard, Vegas and timed scoring.')
