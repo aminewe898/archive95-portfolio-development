@@ -88,6 +88,10 @@ export function ComputerExplorer({ winId }: { winId: string }) {
 
   const here = places[place]
   return (
+    <div className="app-layout" onKeyDown={(e) => {
+      // Backspace goes to the parent folder, as in every Windows 95 folder window.
+      if (e.key === 'Backspace' && here.parent && !(e.target as HTMLElement).closest('input, textarea')) { e.preventDefault(); setPlace(here.parent) }
+    }}>
     <FileView
       key={place}
       winId={winId}
@@ -112,5 +116,6 @@ export function ComputerExplorer({ winId }: { winId: string }) {
         </button>
       }
     />
+    </div>
   )
 }

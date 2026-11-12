@@ -80,15 +80,15 @@ export function ShutdownDialog({ winId }: { winId: string }) {
           <legend>{t('¿Seguro que quieres:', 'Are you sure you want to:')}</legend>
           <div className="field-row">
             <input id={`${winId}-off`} type="radio" name="mode" checked={mode === 'off'} onChange={() => setMode('off')} />
-            <label htmlFor={`${winId}-off`}>{t('Apagar el equipo', 'Shut down the computer')}</label>
+            <label htmlFor={`${winId}-off`}>{t('¿Apagar el equipo?', 'Shut down the computer?')}</label>
           </div>
           <div className="field-row">
             <input id={`${winId}-restart`} type="radio" name="mode" checked={mode === 'restart'} onChange={() => setMode('restart')} />
-            <label htmlFor={`${winId}-restart`}>{t('Reiniciar el equipo', 'Restart the computer')}</label>
+            <label htmlFor={`${winId}-restart`}>{t('¿Reiniciar el equipo?', 'Restart the computer?')}</label>
           </div>
           <div className="field-row">
             <input id={`${winId}-dos`} type="radio" name="mode" checked={mode === 'dos'} onChange={() => setMode('dos')} />
-            <label htmlFor={`${winId}-dos`}>{t('Reiniciar el equipo en modo MS-DOS', 'Restart the computer in MS-DOS mode')}</label>
+            <label htmlFor={`${winId}-dos`}>{t('¿Reiniciar el equipo en modo MS-DOS?', 'Restart the computer in MS-DOS mode?')}</label>
           </div>
         </fieldset>
       </div>
@@ -112,7 +112,7 @@ export const wallpaperOptions: { id: Wallpaper; es: string; en: string }[] = [
 ]
 
 export function DisplayProperties({ winId }: { winId: string }) {
-  const { t, wallpaper, setWallpaper, close, startScreensaver } = useOs()
+  const { t, wallpaper, setWallpaper, close, startScreensaver, fullDrag, setFullDrag } = useOs()
   const [tab, setTab] = useState<'background' | 'saver'>('background')
   const [choice, setChoice] = useState<Wallpaper>(wallpaper)
 
@@ -146,6 +146,10 @@ export function DisplayProperties({ winId }: { winId: string }) {
                   </option>
                 ))}
               </select>
+              <div className="field-row">
+                <input id={`${winId}-drag`} type="checkbox" checked={fullDrag} onChange={(e) => setFullDrag(e.target.checked)} />
+                <label htmlFor={`${winId}-drag`}>{t('Mostrar el contenido de la ventana al arrastrar', 'Show window contents while dragging')}</label>
+              </div>
             </div>
           ) : (
             <div className="saver-row">

@@ -7,7 +7,7 @@ import { OsIcon, type IconName } from './icons'
 import { useOs, type AppId, type OsWindow } from './os-context'
 
 type TaskItem = { win: OsWindow; title: string; icon: IconName }
-export type ArrangeKind = 'cascade' | 'tile-h' | 'tile-v' | 'minimize'
+export type ArrangeKind = 'cascade' | 'tile-h' | 'tile-v' | 'minimize' | 'undo'
 type BarMenu = { x: number; taskId?: string } | null
 
 type StartEntry = { label: string; icon: IconName; onSelect?: () => void; children?: StartEntry[] }
@@ -198,6 +198,7 @@ export function Taskbar({ tasks, activeId, onTask, onArrange, onMinimize }: { ta
               <button type="button" role="menuitem" onClick={pick(() => onArrange('tile-v'))}>{t('Mosaico vertical', 'Tile Vertically')}</button>
               <hr className="menu-separator" />
               <button type="button" role="menuitem" onClick={pick(() => onArrange('minimize'))}>{t('Minimizar todas las ventanas', 'Minimize All Windows')}</button>
+              <button type="button" role="menuitem" onClick={pick(() => onArrange('undo'))}>{t('Deshacer Minimizar todo', 'Undo Minimize All')}</button>
               <hr className="menu-separator" />
               <button type="button" role="menuitem" onClick={pick(() => os.open('datetime'))}>{t('Ajustar fecha y hora', 'Adjust Date/Time')}</button>
               <button type="button" role="menuitem" onClick={pick(() => os.open('taskman'))}>{t('Cerrar programa…', 'Close Program…')}</button>

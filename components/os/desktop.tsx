@@ -36,6 +36,7 @@ import dynamic from 'next/dynamic'
 import { PortfolioDocument } from '../portfolio-document'
 import { documentPath, parseDocumentRoute, type DocumentRoute } from '@/lib/navigation'
 import { syncDocumentMetadata } from './document-metadata'
+import { Tooltips } from './tooltips'
 
 const TASKBAR = 30
 const IDLE_MS = 120_000
@@ -48,7 +49,7 @@ const sizes: Record<AppId, [number, number]> = {
   resume: [660, 560],
   mail: [540, 440],
   terminal: [620, 390],
-  mines: [196, 292],
+  mines: [180, 276],
   snake: [360, 610],
   notepad: [500, 400],
   recycle: [500, 330],
@@ -96,6 +97,10 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
   const routeRef = useRef(route)
   routeRef.current = route
   const launchers = useRef(new Map<string, HTMLElement>())
+  // A reopened window returns to the size and position it had when it was last closed.
+  const lastPlace = useRef(new Map<string, { x: number; y: number; w: number; h: number }>())
+  const beforeMinimizeAll = useRef<Map<string, boolean> | null>(null)
+  const [fullDrag, setFullDragState] = useState(false)
   const [windows, setWindows] = useState<OsWindow[]>(() => {
     const app = initial?.app ?? 'welcome'
     const [w, h] = sizes[app]
@@ -166,7 +171,16 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
         const step = centered ? 0 : (cascade.current++ % 6) * 26
         const x = Math.max(4, Math.min(W - w - 4, centered ? (W - w) / 2 : Math.max(108, (W - w) / 2 - 80) + step))
         const y = Math.max(4, Math.min(H - h - 4, centered ? (H - h) / 2.4 : 28 + step))
-        return [...list, { id, app, arg, message, x, y, w, h, z: zRef.current, minimized: false, maximized: false }]
+        const kept = app === 'message' ? undefined : lastPlace.current.get(id)
+        const place = kept
+          ? {
+              w: fixedSize.has(app) ? w : Math.min(kept.w, W - 8),
+              h: fixedSize.has(app) ? h : Math.min(kept.h, H - 8),
+              x: Math.max(4, Math.min(W - 60, kept.x)),
+              y: Math.max(0, Math.min(H - 22, kept.y)),
+            }
+          : { x, y, w, h }
+        return [...list, { id, app, arg, message, ...place, z: zRef.current, minimized: false, maximized: false }]
       })
     },
     [],
@@ -185,7 +199,11 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
   )
 
   const close = useCallback((id: string) => {
-    setWindows(list => list.filter(w => w.id !== id))
+    setWindows(list => {
+      const gone = list.find(w => w.id === id)
+      if (gone && gone.app !== 'message' && window.innerWidth > 640) lastPlace.current.set(id, { x: gone.x, y: gone.y, w: gone.w, h: gone.h })
+      return list.filter(w => w.id !== id)
+    })
     if (id === 'project' || id === 'resume') navigate({ lang: routeRef.current.lang })
     const launcher = launchers.current.get(id)
     launchers.current.delete(id)
@@ -202,7 +220,15 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
   }, [patch])
 
   const arrange = useCallback((kind: ArrangeKind) => setWindows((list) => {
-    if (kind === 'minimize') return list.map((w) => ({ ...w, minimized: true }))
+    if (kind === 'minimize') {
+      beforeMinimizeAll.current = new Map(list.map((w) => [w.id, w.minimized]))
+      return list.map((w) => ({ ...w, minimized: true }))
+    }
+    if (kind === 'undo') {
+      const was = beforeMinimizeAll.current
+      if (!was) return list
+      return list.map((w) => (was.has(w.id) ? { ...w, minimized: was.get(w.id)! } : w))
+    }
     const W = window.innerWidth
     const H = window.innerHeight - TASKBAR
     const shown = list.filter((w) => !w.minimized && !dialogs.has(w.app)).sort((a, b) => a.z - b.z)
@@ -234,6 +260,21 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
   const setWallpaper = useCallback((w: Wallpaper) => {
     setWallpaperState(w)
     writePreference('a95-wallpaper', w)
+  }, [])
+
+  const setFullDrag = useCallback((on: boolean) => {
+    setFullDragState(on)
+    writePreference('a95-fulldrag', on ? 'on' : 'off')
+  }, [])
+
+  const resizeWindow = useCallback((id: string, w: number, h: number) => {
+    if (window.innerWidth <= 640) return
+    setWindows((list) => list.map((win) => {
+      if (win.id !== id) return win
+      const width = Math.min(w, window.innerWidth - 8)
+      const height = Math.min(h, window.innerHeight - TASKBAR - 8)
+      return { ...win, w: width, h: height, x: Math.max(4, Math.min(win.x, window.innerWidth - width - 4)), y: Math.max(0, Math.min(win.y, window.innerHeight - TASKBAR - height - 4)) }
+    }))
   }, [])
 
   // A picture from Paint lasts for this visit only; it is not stored.
@@ -273,6 +314,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
     const storedWall = readPreference('a95-wallpaper') as Wallpaper | null
     if (storedWall && wallpaperOptions.some((o) => o.id === storedWall)) setWallpaperState(storedWall)
     setSoundOnState(readPreference('a95-sound') === 'on')
+    setFullDragState(readPreference('a95-fulldrag') === 'on')
     const storedVolume = readPreference('a95-volume')
     if (storedVolume !== null && Number.isFinite(Number(storedVolume))) setVolumeState(Math.max(0, Math.min(1, Number(storedVolume))))
     setViewportH(window.innerHeight)
@@ -365,6 +407,9 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
       wallpaper,
       setWallpaper,
       setCustomWallpaper,
+      resizeWindow,
+      fullDrag,
+      setFullDrag,
       volume,
       setVolume,
       soundOn,
@@ -379,7 +424,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
         setRecycleEmptied(true)
       },
     }),
-    [lang, t, open, close, message, wallpaper, setWallpaper, setCustomWallpaper, volume, setVolume, soundOn, setSoundOn, play, setLang, power, recycleEmptied],
+    [lang, t, open, close, message, wallpaper, setWallpaper, setCustomWallpaper, resizeWindow, fullDrag, setFullDrag, volume, setVolume, soundOn, setSoundOn, play, setLang, power, recycleEmptied],
   )
 
   const icons: DesktopIcon[] = [
@@ -410,9 +455,9 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
         return { title: projectAppName(w.arg ?? ''), icon: projectIcon(w.arg ?? '') }
       }
       case 'resume':
-        return { title: 'RESUME.DOC — WordPad', icon: 'doc' }
+        return { title: 'RESUME.DOC - WordPad', icon: 'doc' }
       case 'mail':
-        return { title: `${t('Mensaje nuevo', 'New Message')} — Outlook Express`, icon: 'mail' }
+        return { title: `${t('Mensaje nuevo', 'New Message')} - Outlook Express`, icon: 'mail' }
       case 'terminal':
         return { title: 'MS-DOS Prompt', icon: 'dos' }
       case 'mines':
@@ -420,7 +465,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
       case 'snake':
         return { title: 'Snake', icon: 'snake' }
       case 'notepad':
-        return { title: w.arg?.startsWith('new') ? t('Sin título — Bloc de notas', 'Untitled — Notepad') : `README.TXT — ${t('Bloc de notas', 'Notepad')}`, icon: 'notepad' }
+        return { title: w.arg?.startsWith('new') ? t('Sin título - Bloc de notas', 'Untitled - Notepad') : `README.TXT - ${t('Bloc de notas', 'Notepad')}`, icon: 'notepad' }
       case 'recycle':
         return { title: t('Papelera de reciclaje', 'Recycle Bin'), icon: recycleEmptied ? 'recycleEmpty' : 'recycleFull' }
       case 'skills':
@@ -436,7 +481,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
       case 'ie':
         return { title: 'Internet Explorer', icon: 'ie' }
       case 'paint':
-        return { title: t('Sin título — Paint', 'untitled — Paint'), icon: 'paint' }
+        return { title: t('Sin título - Paint', 'untitled - Paint'), icon: 'paint' }
       case 'calc':
         return { title: t('Calculadora', 'Calculator'), icon: 'calc' }
       case 'taskman':
@@ -452,8 +497,15 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
     }
   }
 
+  const iconProperties = (target: DesktopIcon) => {
+    setMenu(null)
+    if (target.id === 'computer') open('about')
+    else message({ title: t(`Propiedades de ${target.label}`, `${target.label} Properties`), text: t(`${target.label}\n\nTipo: Acceso directo\nUbicación: C:\\WINDOWS\\Escritorio\nAbre: ${meta({ id: target.id, app: target.app, arg: target.arg, x: 0, y: 0, w: 0, h: 0, z: 0, minimized: false, maximized: false }).title}`, `${target.label}\n\nType: Shortcut\nLocation: C:\\WINDOWS\\Desktop\nOpens: ${meta({ id: target.id, app: target.app, arg: target.arg, x: 0, y: 0, w: 0, h: 0, z: 0, minimized: false, maximized: false }).title}`), kind: 'info' })
+  }
+
   const ordered = [...windows].sort((a, b) => a.z - b.z)
-  const tasks = windows.filter((w) => w.app !== 'message').map((w) => ({ win: w, ...meta(w) }))
+  // Only primary windows get a taskbar button; dialogs, property sheets and message boxes do not.
+  const tasks = windows.filter((w) => !dialogs.has(w.app)).map((w) => ({ win: w, ...meta(w) }))
 
   const renderApp = (w: OsWindow) => {
     switch (w.app) {
@@ -571,6 +623,8 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
             icons={icons}
             selected={selectedIcons}
             onSelect={setSelectedIcons}
+            onProperties={iconProperties}
+            onMenu={(icon, x, y) => { setSelectedIcons([icon.id]); setMenu({ x, y: Math.min(y, window.innerHeight - TASKBAR - 110), icon }) }}
             onOpen={(i) => open(i.app, i.arg)}
             offsets={iconOffsets}
             onMove={(id, pos) => setIconOffsets((o) => ({ ...o, [id]: pos }))}
@@ -589,6 +643,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
                 blocked={phase !== 'desktop' || saver || (topWindow?.app === 'message' || topWindow?.app === 'shutdown') && w.id !== activeId}
                 resizable={!fixedSize.has(w.app)}
                 dialog={dialogs.has(w.app)}
+                outline={!fullDrag}
                 onFocus={() => focus(w.id)}
                 onMinimize={() => minimize(w.id)}
                 onToggleMaximize={() => patch(w.id, { maximized: !w.maximized })}
@@ -617,10 +672,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
               )}
               <hr className="menu-separator" />
               <button type="button" role="menuitem" onClick={() => {
-                const target = menu.icon!
-                setMenu(null)
-                if (target.id === 'computer') open('about')
-                else message({ title: t(`Propiedades de ${target.label}`, `${target.label} Properties`), text: t(`${target.label}\n\nTipo: Acceso directo\nUbicación: C:\\WINDOWS\\Escritorio\nAbre: ${meta({ id: target.id, app: target.app, arg: target.arg, x: 0, y: 0, w: 0, h: 0, z: 0, minimized: false, maximized: false }).title}`, `${target.label}\n\nType: Shortcut\nLocation: C:\\WINDOWS\\Desktop\nOpens: ${meta({ id: target.id, app: target.app, arg: target.arg, x: 0, y: 0, w: 0, h: 0, z: 0, minimized: false, maximized: false }).title}`), kind: 'info' })
+                iconProperties(menu.icon!)
               }}>
                 {t('Propiedades', 'Properties')}
               </button>
@@ -663,8 +715,11 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
           onTask={(id) => {
             const w = windows.find((x) => x.id === id)
             if (!w) return
-            if (w.id === activeId && !w.minimized) minimize(id)
-            else {
+            // Windows 95 leaves the active window alone; minimizing from its button arrived with Windows 98.
+            // Phones keep it, because a full-screen window has no other way back to the desktop.
+            if (w.id === activeId && !w.minimized) {
+              if (window.innerWidth <= 640) minimize(id)
+            } else {
               if (w.minimized) zoomTitle(taskRect(id), w.maximized ? new DOMRect(0, 0, window.innerWidth, 20) : new DOMRect(w.x, w.y, w.w, 20))
               focus(id)
             }
@@ -673,6 +728,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
           onMinimize={minimize}
         />
 
+        <Tooltips />
         {phase === 'boot' && <BootScreen lang={lang} onDone={finishBoot} />}
         {phase === 'off' && <OffScreen lang={lang} onWake={() => setPhase('boot')} />}
         {saver && phase === 'desktop' && <Screensaver onExit={() => setSaver(false)} />}
@@ -686,6 +742,8 @@ function DesktopIcons({
   icons,
   selected,
   onSelect,
+  onProperties,
+  onMenu,
   onOpen,
   offsets,
   onMove,
@@ -694,6 +752,8 @@ function DesktopIcons({
   icons: DesktopIcon[]
   selected: string[]
   onSelect: (ids: string[]) => void
+  onProperties: (icon: DesktopIcon) => void
+  onMenu: (icon: DesktopIcon, x: number, y: number) => void
   onOpen: (icon: DesktopIcon) => void
   offsets: Record<string, { x: number; y: number }>
   onMove: (id: string, pos: { x: number; y: number }) => void
@@ -701,6 +761,7 @@ function DesktopIcons({
 }) {
   const gesture = useOpenGesture()
   const dragged = useRef(false)
+  const ctrl = useRef(false)
   const CELL_W = 84
   const CELL_H = 78
   const rows = Math.max(1, Math.floor((viewportH - TASKBAR - 8) / CELL_H))
@@ -736,7 +797,15 @@ function DesktopIcons({
   }
 
   // Arrow keys walk the icon grid, as they do on the real desktop.
-  const walk = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+  const walk = (e: React.KeyboardEvent<HTMLButtonElement>, icon: DesktopIcon) => {
+    if (e.altKey && e.key === 'Enter') { e.preventDefault(); onProperties(icon); return }
+    if (e.shiftKey && e.key === 'F10') {
+      e.preventDefault()
+      const box = e.currentTarget.getBoundingClientRect()
+      onMenu(icon, box.left + 40, box.top + 30)
+      return
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') { e.preventDefault(); onSelect(icons.map((i) => i.id)); return }
     if (!e.key.startsWith('Arrow') || e.altKey) return
     e.preventDefault()
     const dx = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0
@@ -761,7 +830,7 @@ function DesktopIcons({
         const base = { x: 6 + Math.floor(i / rows) * CELL_W, y: 6 + (i % rows) * CELL_H }
         const pos = offsets[icon.id] ?? base
         const handlers = gesture(
-          () => onSelect([icon.id]),
+          () => { if (!ctrl.current) onSelect([icon.id]) },
           () => onOpen(icon),
         )
         return (
@@ -772,8 +841,9 @@ function DesktopIcons({
               className={`desktop-icon ${selected.includes(icon.id) ? 'is-selected' : ''}`}
               style={{ left: pos.x, top: pos.y }}
               {...handlers}
-              onKeyDown={walk}
+              onKeyDown={(e) => walk(e, icon)}
               onPointerDown={(e) => {
+                ctrl.current = e.ctrlKey
                 handlers.onPointerDown(e)
                 startDrag(e, icon.id, pos)
               }}
@@ -781,6 +851,12 @@ function DesktopIcons({
                 if (dragged.current) {
                   dragged.current = false
                   e.stopPropagation()
+                  return
+                }
+                if (e.ctrlKey) {
+                  // Ctrl+click adds or removes one icon from the selection.
+                  e.stopPropagation()
+                  onSelect(selected.includes(icon.id) ? selected.filter((id) => id !== icon.id) : [...selected, icon.id])
                   return
                 }
                 handlers.onClick(e)
