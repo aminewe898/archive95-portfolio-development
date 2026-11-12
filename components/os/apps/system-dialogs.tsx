@@ -47,7 +47,7 @@ export function RunDialog({ winId }: { winId: string }) {
         <label htmlFor={`${winId}-input`}>{t('Abrir:', 'Open:')}</label>
         <input id={`${winId}-input`} list={`${winId}-list`} value={value} onChange={(e) => setValue(e.target.value)} autoFocus autoComplete="off" />
         <datalist id={`${winId}-list`}>
-          {['relay', 'cv', 'iexplore', 'mspaint', 'calc', 'winmine', 'cmd', 'notepad', 'outlook', 'explorer', 'control', 'taskman', 'github'].map((v) => (
+          {['relay', 'cv', 'iexplore', 'mspaint', 'calc', 'winmine', 'cmd', 'notepad', 'outlook', 'explorer', 'control', 'taskman', 'sol', 'find', 'github'].map((v) => (
             <option key={v} value={v} />
           ))}
         </datalist>
@@ -64,7 +64,7 @@ export function RunDialog({ winId }: { winId: string }) {
 
 export function ShutdownDialog({ winId }: { winId: string }) {
   const { t, close, power } = useOs()
-  const [mode, setMode] = useState<'off' | 'restart'>('off')
+  const [mode, setMode] = useState<'off' | 'restart' | 'dos'>('off')
   return (
     <form
       className="run-dialog"
@@ -85,6 +85,10 @@ export function ShutdownDialog({ winId }: { winId: string }) {
           <div className="field-row">
             <input id={`${winId}-restart`} type="radio" name="mode" checked={mode === 'restart'} onChange={() => setMode('restart')} />
             <label htmlFor={`${winId}-restart`}>{t('Reiniciar el equipo', 'Restart the computer')}</label>
+          </div>
+          <div className="field-row">
+            <input id={`${winId}-dos`} type="radio" name="mode" checked={mode === 'dos'} onChange={() => setMode('dos')} />
+            <label htmlFor={`${winId}-dos`}>{t('Reiniciar el equipo en modo MS-DOS', 'Restart the computer in MS-DOS mode')}</label>
           </div>
         </fieldset>
       </div>

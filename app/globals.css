@@ -859,3 +859,67 @@ body.is-window-gesture { user-select: none; }
 .taskman-list button.is-selected { background: #000080; color: #fff; text-shadow: none; }
 .taskman-empty { padding: 4px 6px; color: #555; }
 .taskman-note { margin: 0; line-height: 1.4; }
+
+/* ---------- desktop: rubber band, begin hint, clock ---------- */
+.marquee { position: absolute; z-index: 5; border: 1px dotted #fff; mix-blend-mode: difference; pointer-events: none; }
+.begin-hint { position: absolute; left: 62px; top: 4px; z-index: 2; height: 22px; padding: 0 10px; display: flex; align-items: center; white-space: nowrap; font-weight: bold; pointer-events: none; animation: begin-slide 2.4s ease-in-out infinite; }
+@keyframes begin-slide { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(46px); } }
+@media (prefers-reduced-motion: reduce) { .begin-hint { animation: none; } }
+.tray-clock-button { padding: 0 2px; }
+.tray-clock-button .tray-clock { padding-left: 0; }
+.tray-clock-button:focus-visible { outline: 1px dotted #000; }
+
+/* ---------- Solitaire ---------- */
+.sol-table { flex: 1; min-height: 0; overflow: auto; padding: 10px; background: #008000; display: flex; flex-direction: column; gap: 14px; --card-w: 64px; --card-h: 88px; }
+.sol-top, .sol-columns { display: grid; grid-template-columns: repeat(7, var(--card-w)); gap: 12px; justify-content: center; }
+.sol-gap { display: block; }
+.card-slot { position: relative; width: var(--card-w); height: var(--card-h); min-width: 0; min-height: 0; padding: 0; border: 0; border-radius: 4px; background: none; box-shadow: inset 0 0 0 1px #004000; display: block; }
+.card-slot.is-empty { display: grid; place-items: center; color: #00c000; font-size: 26px; text-shadow: none; background: none; }
+.card-slot.is-empty:active { box-shadow: inset 0 0 0 1px #004000; }
+.card-target { position: absolute; inset: 0; width: 100%; height: 100%; min-width: 0; min-height: 0; padding: 0; background: none; border: 0; box-shadow: none; }
+.card-target:active { box-shadow: none; }
+.card-target:focus-visible, .card:focus-visible, .card-slot:focus-visible { outline: 2px dotted #ffff00; outline-offset: 1px; }
+.card { position: relative; display: block; width: var(--card-w); height: var(--card-h); min-width: 0; min-height: 0; padding: 0; background: #fff; color: #000; text-shadow: none; border: 0; border-radius: 4px; box-shadow: 0 0 0 1px #000; font-family: Arial, sans-serif; cursor: default; }
+.card:active { box-shadow: 0 0 0 1px #000; }
+.card.is-red { color: #d00000; }
+.card.is-held { filter: invert(1); }
+.card-corner { position: absolute; left: 4px; top: 3px; font: bold 13px/1.05 Arial, sans-serif; text-align: center; }
+.card-pip { position: absolute; inset: 0; display: grid; place-items: center; font-size: 30px; padding-top: 10px; }
+.card-back, .card-slot.card-back { background: #000080 repeating-conic-gradient(#000080 0 25%, #4040c0 0 50%) 0 0 / 6px 6px; box-shadow: 0 0 0 1px #000, inset 0 0 0 3px #fff; border-radius: 4px; }
+.card-slot.card-back:active { box-shadow: 0 0 0 1px #000, inset 0 0 0 3px #fff; }
+.sol-column { position: relative; min-height: var(--card-h); display: flex; flex-direction: column; }
+.sol-stacked { height: 8px; }
+.sol-stacked.is-up { height: 22px; }
+.sol-stacked:last-child { height: var(--card-h); }
+@media (max-width: 640px) {
+  .sol-table { padding: 6px 2px; --card-w: calc((100vw - 34px) / 7); --card-h: calc(var(--card-w) * 1.38); }
+  .sol-top, .sol-columns { gap: 4px; }
+  .card-corner { left: 2px; top: 2px; font-size: 11px; }
+  .card-pip { font-size: 20px; padding-top: 12px; }
+}
+
+/* ---------- Find ---------- */
+.find-top { flex-shrink: 0; display: flex; gap: 10px; align-items: flex-start; padding: 10px; }
+.find-fields { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.find-fields .field-row { display: flex; align-items: center; gap: 6px; }
+.find-fields label { width: 108px; flex-shrink: 0; }
+.find-fields input, .find-fields select { flex: 1; min-width: 0; }
+.find-actions { display: flex; flex-direction: column; gap: 6px; }
+.find-glass { margin-top: 4px; }
+.find-results { flex: 1; min-height: 0; margin: 0 2px; overflow: auto; background: #fff; box-shadow: inset -1px -1px #fff, inset 1px 1px #808080, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a; padding: 2px; }
+.find .status-bar { margin-top: auto; }
+@media (max-width: 640px) { .find-top { flex-wrap: wrap; } .find-actions { flex-direction: row; } .find-glass { display: none; } .find-fields label { width: 84px; } }
+
+/* ---------- Date/Time ---------- */
+.datetime-panels { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.datetime fieldset { margin: 0; padding: 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+.datetime-month { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 4px; text-transform: capitalize; }
+.datetime-month button { min-width: 0; min-height: 0; padding: 1px 5px; }
+.datetime-grid { width: 100%; display: grid; grid-template-columns: repeat(7, 1fr); background: #fff; padding: 3px; box-shadow: inset -1px -1px #fff, inset 1px 1px #808080, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a; }
+.datetime-grid span { text-align: center; padding: 2px 0; min-height: 17px; }
+.datetime-weekday { background: #808080; color: #fff; text-transform: uppercase; }
+.datetime-grid .is-today { background: #000080; color: #fff; }
+.datetime-clock { width: 118px; height: 118px; max-width: 100%; }
+.datetime-digital { padding: 2px 10px; background: #fff; box-shadow: inset -1px -1px #fff, inset 1px 1px #808080, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a; }
+.datetime-zone { margin: 0; }
+@media (max-width: 640px) { .datetime-panels { grid-template-columns: 1fr; } }

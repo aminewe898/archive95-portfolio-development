@@ -17,6 +17,10 @@ const InternetApp = dynamic(() => import('./apps/internet').then(m => m.Internet
 const PaintApp = dynamic(() => import('./apps/paint').then(m => m.PaintApp))
 const CalculatorApp = dynamic(() => import('./apps/calculator').then(m => m.CalculatorApp))
 const TaskManager = dynamic(() => import('./apps/task-manager').then(m => m.TaskManager))
+const SolitaireApp = dynamic(() => import('./apps/solitaire').then(m => m.SolitaireApp))
+const ComputerExplorer = dynamic(() => import('./apps/computer').then(m => m.ComputerExplorer))
+const FindApp = dynamic(() => import('./apps/find').then(m => m.FindApp))
+const DateTimeApp = dynamic(() => import('./apps/date-time').then(m => m.DateTimeApp))
 import { WelcomeApp } from './apps/welcome'
 import { BootScreen, OffScreen, Screensaver } from './boot'
 import { OsIcon, type IconName } from './icons'
@@ -57,9 +61,13 @@ const sizes: Record<AppId, [number, number]> = {
   paint: [740, 560],
   calc: [262, 262],
   taskman: [380, 320],
+  computer: [560, 400],
+  find: [540, 400],
+  datetime: [440, 340],
+  sol: [590, 520],
 }
 
-const dialogs = new Set<AppId>(['run', 'shutdown', 'message', 'display', 'about', 'taskman'])
+const dialogs = new Set<AppId>(['run', 'shutdown', 'message', 'display', 'about', 'taskman', 'datetime'])
 const fixedSize = new Set<AppId>([...dialogs, 'mines', 'snake', 'welcome', 'calc'])
 const singletons = new Set<AppId>(['project', 'mail', 'ie'])
 
@@ -80,7 +88,7 @@ function zoomTitle(from: DOMRect | undefined, to: DOMRect | undefined) {
 
 type DesktopIcon = { id: string; label: string; icon: IconName; app: AppId; arg?: string }
 
-type ContextMenuState = { x: number; y: number } | null
+type ContextMenuState = { x: number; y: number; icon?: DesktopIcon } | null
 
 export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: { app: AppId; arg?: string } }) {
   const [lang, setLangState] = useState<Lang>(initialLang)
@@ -114,7 +122,8 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
   const [phase, setPhase] = useState<'desktop' | 'boot' | 'off'>('desktop')
   const [saver, setSaver] = useState(false)
   const [recycleEmptied, setRecycleEmptied] = useState(false)
-  const [selectedIcon, setSelectedIcon] = useState<string | null>(null)
+  const [selectedIcons, setSelectedIcons] = useState<string[]>([])
+  const [marquee, setMarquee] = useState<{ x: number; y: number; w: number; h: number } | null>(null)
   const [iconOffsets, setIconOffsets] = useState<Record<string, { x: number; y: number }>>({})
   const [menu, setMenu] = useState<ContextMenuState>(null)
   const [viewportH, setViewportH] = useState(720)
@@ -242,7 +251,13 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
     if (readPreference('a95-welcome') !== 'off') spawn('welcome')
   }, [spawn])
 
-  const power = useCallback((mode: 'off' | 'restart') => {
+  const power = useCallback((mode: 'off' | 'restart' | 'dos') => {
+    if (mode === 'dos') {
+      const [w, h] = sizes.terminal
+      zRef.current += 1
+      setWindows([{ id: 'terminal', app: 'terminal', x: 40, y: 30, w, h, z: zRef.current, minimized: false, maximized: true }])
+      return
+    }
     setWindows([])
     setPhase(mode === 'off' ? 'off' : 'boot')
   }, [])
@@ -330,8 +345,9 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
     const shortcut = (event: KeyboardEvent) => {
       if (phase !== 'desktop' || saver || event.repeat || event.ctrlKey || event.metaKey) return
       const target = event.target as HTMLElement
-      if (target.closest('input, textarea, select, [contenteditable="true"]')) return
+      if (target.closest?.('input, textarea, select, [contenteditable="true"]')) return
       if (event.key === 'F1') { event.preventDefault(); open('welcome') }
+      if (event.key === 'F3') { event.preventDefault(); open('find') }
       if (event.altKey && event.code === 'KeyP') { event.preventDefault(); open('projects') }
       if (event.altKey && event.code === 'KeyM') { event.preventDefault(); setSoundOn(!soundRef.current) }
     }
@@ -367,7 +383,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
   )
 
   const icons: DesktopIcon[] = [
-    { id: 'about', label: t('Mi PC', 'My Computer'), icon: 'computer', app: 'about' },
+    { id: 'computer', label: t('Mi PC', 'My Computer'), icon: 'computer', app: 'computer' },
     { id: 'projects', label: t('Proyectos', 'Projects'), icon: 'folder', app: 'projects' },
     { id: 'ie', label: 'Internet Explorer', icon: 'ie', app: 'ie' },
     { id: 'relay', label: 'RELAY.EXE', icon: 'automation', app: 'project', arg: 'relay' },
@@ -425,6 +441,14 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
         return { title: t('Calculadora', 'Calculator'), icon: 'calc' }
       case 'taskman':
         return { title: t('Cerrar programa', 'Close Program'), icon: 'taskman' }
+      case 'computer':
+        return { title: t('Mi PC', 'My Computer'), icon: 'computer' }
+      case 'find':
+        return { title: t('Buscar: Todos los archivos', 'Find: All Files'), icon: 'find' }
+      case 'datetime':
+        return { title: t('Propiedades de Fecha y hora', 'Date/Time Properties'), icon: 'clock' }
+      case 'sol':
+        return { title: t('Solitario', 'Solitaire'), icon: 'sol' }
     }
   }
 
@@ -471,6 +495,14 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
         return <PaintApp winId={w.id} />
       case 'calc':
         return <CalculatorApp />
+      case 'computer':
+        return <ComputerExplorer winId={w.id} />
+      case 'find':
+        return <FindApp winId={w.id} />
+      case 'datetime':
+        return <DateTimeApp winId={w.id} />
+      case 'sol':
+        return <SolitaireApp winId={w.id} suspended={w.minimized || phase !== 'desktop' || saver} />
       case 'taskman':
         return <TaskManager winId={w.id} tasks={tasks.map((task) => ({ id: task.win.id, title: task.title }))} onSwitch={focus} />
     }
@@ -503,18 +535,42 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
           className="desktop"
           aria-label={t('Escritorio', 'Desktop')}
           onPointerDown={(e) => {
-            if (e.target === e.currentTarget) setSelectedIcon(null)
+            if (e.target !== e.currentTarget && !(e.target as HTMLElement).classList.contains('desktop-icons')) return
+            setSelectedIcons([])
+            if (e.button !== 0 || e.pointerType === 'touch') return
+            // Rubber-band selection, as on the real desktop.
+            const sx = e.clientX
+            const sy = e.clientY
+            const move = (ev: PointerEvent) => {
+              const box = { x: Math.min(sx, ev.clientX), y: Math.min(sy, ev.clientY), w: Math.abs(ev.clientX - sx), h: Math.abs(ev.clientY - sy) }
+              if (box.w < 4 && box.h < 4) return
+              setMarquee(box)
+              setSelectedIcons(Array.from(document.querySelectorAll<HTMLElement>('.desktop-icon')).filter((el) => {
+                const r = el.getBoundingClientRect()
+                return r.left < box.x + box.w && r.right > box.x && r.top < box.y + box.h && r.bottom > box.y
+              }).map((el) => el.dataset.iconId ?? ''))
+            }
+            const up = () => {
+              setMarquee(null)
+              window.removeEventListener('pointermove', move)
+              window.removeEventListener('pointerup', up)
+            }
+            window.addEventListener('pointermove', move)
+            window.addEventListener('pointerup', up)
           }}
           onContextMenu={(e) => {
             if ((e.target as HTMLElement).closest('.os-window')) return
             e.preventDefault()
-            setMenu({ x: Math.max(4, Math.min(e.clientX, window.innerWidth - 210)), y: Math.max(4, Math.min(e.clientY, window.innerHeight - TASKBAR - 270)) })
+            const iconId = (e.target as HTMLElement).closest<HTMLElement>('.desktop-icon')?.dataset.iconId
+            const icon = icons.find((i) => i.id === iconId)
+            if (icon) setSelectedIcons([icon.id])
+            setMenu({ x: Math.max(4, Math.min(e.clientX, window.innerWidth - 210)), y: Math.max(4, Math.min(e.clientY, window.innerHeight - TASKBAR - (icon ? 110 : 270))), icon })
           }}
         >
           <DesktopIcons
             icons={icons}
-            selected={selectedIcon}
-            onSelect={setSelectedIcon}
+            selected={selectedIcons}
+            onSelect={setSelectedIcons}
             onOpen={(i) => open(i.app, i.arg)}
             offsets={iconOffsets}
             onMove={(id, pos) => setIconOffsets((o) => ({ ...o, [id]: pos }))}
@@ -547,7 +603,31 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
             )
           })}
 
-          {menu && (
+          {marquee && <div className="marquee" aria-hidden="true" style={{ left: marquee.x, top: marquee.y, width: marquee.w, height: marquee.h }} />}
+
+          {menu?.icon && (
+            <div className="os-menu desktop-menu" role="menu" style={{ left: menu.x, top: menu.y }} onPointerDown={(e) => e.stopPropagation()}>
+              <button type="button" role="menuitem" onClick={() => open(menu.icon!.app, menu.icon!.arg)}>
+                <b>{t('Abrir', 'Open')}</b>
+              </button>
+              {menu.icon.id === 'recycle' && (
+                <button type="button" role="menuitem" disabled={recycleEmptied} onClick={() => { api.emptyRecycle(); setMenu(null) }}>
+                  {t('Vaciar Papelera de reciclaje', 'Empty Recycle Bin')}
+                </button>
+              )}
+              <hr className="menu-separator" />
+              <button type="button" role="menuitem" onClick={() => {
+                const target = menu.icon!
+                setMenu(null)
+                if (target.id === 'computer') open('about')
+                else message({ title: t(`Propiedades de ${target.label}`, `${target.label} Properties`), text: t(`${target.label}\n\nTipo: Acceso directo\nUbicación: C:\\WINDOWS\\Escritorio\nAbre: ${meta({ id: target.id, app: target.app, arg: target.arg, x: 0, y: 0, w: 0, h: 0, z: 0, minimized: false, maximized: false }).title}`, `${target.label}\n\nType: Shortcut\nLocation: C:\\WINDOWS\\Desktop\nOpens: ${meta({ id: target.id, app: target.app, arg: target.arg, x: 0, y: 0, w: 0, h: 0, z: 0, minimized: false, maximized: false }).title}`), kind: 'info' })
+              }}>
+                {t('Propiedades', 'Properties')}
+              </button>
+            </div>
+          )}
+
+          {menu && !menu.icon && (
             <div className="os-menu desktop-menu" role="menu" style={{ left: menu.x, top: menu.y }} onPointerDown={(e) => e.stopPropagation()}>
               <button type="button" role="menuitem" onClick={() => { setIconOffsets({}); setMenu(null) }}>
                 {t('Organizar iconos', 'Arrange Icons')}
@@ -612,8 +692,8 @@ function DesktopIcons({
   viewportH,
 }: {
   icons: DesktopIcon[]
-  selected: string | null
-  onSelect: (id: string) => void
+  selected: string[]
+  onSelect: (ids: string[]) => void
   onOpen: (icon: DesktopIcon) => void
   offsets: Record<string, { x: number; y: number }>
   onMove: (id: string, pos: { x: number; y: number }) => void
@@ -655,22 +735,44 @@ function DesktopIcons({
     window.addEventListener('pointerup', up)
   }
 
+  // Arrow keys walk the icon grid, as they do on the real desktop.
+  const walk = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (!e.key.startsWith('Arrow') || e.altKey) return
+    e.preventDefault()
+    const dx = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0
+    const dy = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0
+    const me = e.currentTarget.getBoundingClientRect()
+    let best: HTMLElement | null = null
+    let bestScore = Infinity
+    for (const el of document.querySelectorAll<HTMLElement>('.desktop-icon')) {
+      if (el === e.currentTarget) continue
+      const r = el.getBoundingClientRect()
+      const along = (r.left - me.left) * dx + (r.top - me.top) * dy
+      if (along <= 4) continue
+      const score = along + (Math.abs((r.left - me.left) * dy) + Math.abs((r.top - me.top) * dx)) * 3
+      if (score < bestScore) { bestScore = score; best = el }
+    }
+    best?.focus()
+  }
+
   return (
     <ul className="desktop-icons" aria-label="Desktop icons">
       {icons.map((icon, i) => {
         const base = { x: 6 + Math.floor(i / rows) * CELL_W, y: 6 + (i % rows) * CELL_H }
         const pos = offsets[icon.id] ?? base
         const handlers = gesture(
-          () => onSelect(icon.id),
+          () => onSelect([icon.id]),
           () => onOpen(icon),
         )
         return (
           <li key={icon.id}>
             <button
               type="button"
-              className={`desktop-icon ${selected === icon.id ? 'is-selected' : ''}`}
+              data-icon-id={icon.id}
+              className={`desktop-icon ${selected.includes(icon.id) ? 'is-selected' : ''}`}
               style={{ left: pos.x, top: pos.y }}
               {...handlers}
+              onKeyDown={walk}
               onPointerDown={(e) => {
                 handlers.onPointerDown(e)
                 startDrag(e, icon.id, pos)
@@ -683,7 +785,6 @@ function DesktopIcons({
                 }
                 handlers.onClick(e)
               }}
-
             >
               <OsIcon name={icon.icon} size={32} />
               <span>{icon.label}</span>

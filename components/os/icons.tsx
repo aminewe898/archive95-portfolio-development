@@ -33,6 +33,10 @@ import { Ie } from '@react95/icons/Ie'
 import { Mspaint } from '@react95/icons/Mspaint'
 import { Calculator } from '@react95/icons/Calculator'
 import { Taskman100 } from '@react95/icons/Taskman100'
+import { Sol1 } from '@react95/icons/Sol1'
+import { FileFind } from '@react95/icons/FileFind'
+import { ReaderDisket } from '@react95/icons/ReaderDisket'
+import { MediaCd } from '@react95/icons/MediaCd'
 
 type Variant = string
 type IconComponent = ComponentType<SVGProps<SVGSVGElement> & { variant?: Variant }>
@@ -87,6 +91,10 @@ const library = {
   paint: icon(Mspaint, '32x32_4', '16x16_4'),
   calc: icon(Calculator, '32x32_4', '16x16_4'),
   taskman: icon(Taskman100, '32x32_4'),
+  sol: icon(Sol1, '32x32_4', '16x16_4'),
+  find: icon(FileFind, '32x32_4', '16x16_4'),
+  floppy: icon(ReaderDisket, '32x32_4', '16x16_4'),
+  cd: icon(MediaCd, '32x32_4', '16x16_4'),
 } satisfies Record<string, Entry>
 
 export type IconName = keyof typeof library

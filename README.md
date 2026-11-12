@@ -22,6 +22,18 @@ Production: `pnpm build`, then `pnpm start`. Type checking: `pnpm typecheck`.
 
 Snake is available through `SNAKE.EXE` on the desktop, Start → Programs → Snake, `SNAKE` in Run, or `START SNAKE` in MS-DOS. Use arrow keys or WASD to steer, Space/P to pause, and F2 to restart; directional buttons support touch. The game pauses when inactive, minimized, or hidden. Its best score is stored locally when browser storage is available. Run `pnpm test:snake` for the game rules and collision checks.
 
+## Desktop programs and shell
+
+Besides the portfolio apps, the desktop includes:
+
+- **Internet Explorer** — loads real pages in a sandboxed frame. The year selector (1996, 1998, 2001, 2005) loads an archived copy through the Wayback Machine. There is no proxy: sites that forbid embedding are offered in a new tab or as an archived copy.
+- **My Computer** — drives and folders (A:, C:, D:) that lead to the same projects, documents and programs.
+- **Find** (Start → Find or F3) — searches projects, skills, the CV and programs.
+- **Paint**, **Calculator**, **Solitaire**, **Date/Time Properties** (double-click the clock) and **Close Program**.
+- Windows resize from every edge, have a control menu on the title-bar icon, and can be cascaded or tiled from the taskbar's right-click menu. Desktop icons support right-click menus, drag selection and arrow keys.
+
+Run `pnpm test:sol` for the Solitaire rules, alongside `pnpm test:snake` and `pnpm test:demo`.
+
 ## Content and artwork
 
 `lib/content.ts` contains the profile and project content. The active desktop lives in `components/os`.

@@ -25,6 +25,10 @@ export type AppId =
   | 'paint'
   | 'calc'
   | 'taskman'
+  | 'computer'
+  | 'find'
+  | 'datetime'
+  | 'sol'
 
 export type Wallpaper = 'teal' | 'clouds' | 'pattern' | 'night' | 'custom'
 
@@ -59,7 +63,7 @@ export type OsApi = {
   setSoundOn: (on: boolean) => void
   play: (name: SoundName) => void
   setLang: (lang: Lang) => void
-  power: (mode: 'off' | 'restart') => void
+  power: (mode: 'off' | 'restart' | 'dos') => void
   startScreensaver: () => void
   recycleEmptied: boolean
   emptyRecycle: () => void

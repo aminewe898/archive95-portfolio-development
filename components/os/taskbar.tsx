@@ -115,6 +115,7 @@ export function Taskbar({ tasks, activeId, onTask, onArrange, onMinimize }: { ta
   const [volumeOpen, setVolumeOpen] = useState(false)
   const [startOpen, setStartOpen] = useState(false)
   const [barMenu, setBarMenu] = useState<BarMenu>(null)
+  const [begun, setBegun] = useState(false)
   const barRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -140,8 +141,10 @@ export function Taskbar({ tasks, activeId, onTask, onArrange, onMinimize }: { ta
         { label: t('Bloc de notas', 'Notepad'), icon: 'notepad', onSelect: go('notepad') },
         { label: 'Paint', icon: 'paint', onSelect: go('paint') },
         { label: t('Calculadora', 'Calculator'), icon: 'calc', onSelect: go('calc') },
+        { label: t('Solitario', 'Solitaire'), icon: 'sol', onSelect: go('sol') },
         { label: t('Buscaminas', 'Minesweeper'), icon: 'mines', onSelect: go('mines') },
         { label: 'Snake', icon: 'snake', onSelect: go('snake') },
+        { label: 'GitHub ↗', icon: 'globe', onSelect: () => window.open(profile.github, '_blank', 'noopener') },
       ],
     },
     {
@@ -158,12 +161,13 @@ export function Taskbar({ tasks, activeId, onTask, onArrange, onMinimize }: { ta
       children: [
         { label: t('Panel de control', 'Control Panel'), icon: 'settings', onSelect: go('skills') },
         { label: t('Pantalla', 'Display'), icon: 'desktop', onSelect: go('display') },
+        { label: t('Fecha y hora', 'Date/Time'), icon: 'clock', onSelect: go('datetime') },
+        { label: t('Cerrar programa…', 'Close Program…'), icon: 'taskman', onSelect: go('taskman') },
         { label: lang === 'es' ? 'Switch to English' : 'Cambiar a español', icon: 'globe', onSelect: () => os.setLang(lang === 'es' ? 'en' : 'es') },
         { label: os.soundOn ? t('Silenciar sonidos', 'Mute sounds') : t('Activar sonidos', 'Enable sounds'), icon: 'speaker', onSelect: () => os.setSoundOn(!os.soundOn) },
       ],
     },
-    { label: 'GitHub', icon: 'globe', onSelect: () => window.open(profile.github, '_blank', 'noopener') },
-    { label: t('Cerrar programa…', 'Close Program…'), icon: 'taskman', onSelect: go('taskman') },
+    { label: t('Buscar…', 'Find…'), icon: 'find', onSelect: go('find') },
     { label: t('Ayuda', 'Help'), icon: 'help', onSelect: go('welcome') },
     { label: t('Ejecutar…', 'Run…'), icon: 'run', onSelect: go('run') },
     { label: '—', icon: 'file' },
@@ -195,6 +199,7 @@ export function Taskbar({ tasks, activeId, onTask, onArrange, onMinimize }: { ta
               <hr className="menu-separator" />
               <button type="button" role="menuitem" onClick={pick(() => onArrange('minimize'))}>{t('Minimizar todas las ventanas', 'Minimize All Windows')}</button>
               <hr className="menu-separator" />
+              <button type="button" role="menuitem" onClick={pick(() => os.open('datetime'))}>{t('Ajustar fecha y hora', 'Adjust Date/Time')}</button>
               <button type="button" role="menuitem" onClick={pick(() => os.open('taskman'))}>{t('Cerrar programa…', 'Close Program…')}</button>
               <button type="button" role="menuitem" onClick={pick(() => os.open('display'))}>{t('Propiedades', 'Properties')}</button>
             </>}
@@ -209,6 +214,7 @@ export function Taskbar({ tasks, activeId, onTask, onArrange, onMinimize }: { ta
         aria-expanded={startOpen}
         onClick={() => {
           os.play('click')
+          setBegun(true)
           setStartOpen((o) => !o)
         }}
       >
@@ -216,6 +222,7 @@ export function Taskbar({ tasks, activeId, onTask, onArrange, onMinimize }: { ta
         <b>{t('Inicio', 'Start')}</b>
       </button>
       <span className="taskbar-divider" aria-hidden="true" />
+      {!begun && tasks.length === 0 && !startOpen && <span className="begin-hint" aria-hidden="true">◄ {t('Haz clic aquí para empezar', 'Click here to begin')}</span>}
       <nav className="task-list" aria-label={t('Ventanas abiertas', 'Open windows')}>
         {tasks.map(({ win, title, icon }) => (
           <button key={win.id} type="button" data-task-id={win.id} className={`task-button ${activeId === win.id && !win.minimized ? 'is-pressed' : ''}`} aria-label={title} aria-pressed={activeId === win.id && !win.minimized} onClick={() => onTask(win.id)} title={title}>
@@ -237,7 +244,9 @@ export function Taskbar({ tasks, activeId, onTask, onArrange, onMinimize }: { ta
         <button type="button" className={`tray-button ${os.soundOn ? '' : 'is-muted'}`} data-tray="sound" onClick={() => setVolumeOpen(v=>!v)} aria-label={t('Controles de sonido', 'Sound controls')} aria-expanded={volumeOpen} title={os.soundOn ? t('Volumen', 'Volume') : t('Silenciado', 'Muted')}>
           <OsIcon name="speaker" size={16} />
         </button>
-        <Clock lang={lang} />
+        <button type="button" className="tray-button tray-clock-button" onDoubleClick={() => os.open('datetime')} onKeyDown={(e) => e.key === 'Enter' && os.open('datetime')}>
+          <Clock lang={lang} />
+        </button>
       </div>
     </div>
   )
