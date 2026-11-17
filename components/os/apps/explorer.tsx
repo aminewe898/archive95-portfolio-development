@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { projects } from '@/lib/content'
+import { asset, projects } from '@/lib/content'
 import { OsIcon, type IconName } from '../icons'
 import { MenuBar } from '../menu-bar'
 import { useOs } from '../os-context'
@@ -125,7 +125,7 @@ export function ProjectsExplorer({ winId }: { winId: string }) {
     type: p.category[lang],
     detail: p.technologies.slice(0, 3).join(', '),
     status: `${p.name[lang]} — ${p.summary[lang]}`,
-    preview: `/art/retro/${p.illustration}.svg`,
+    preview: asset(`/art/retro/${p.illustration}.svg`),
     onOpen: () => open('project', p.slug),
   }))
   return <FileView winId={winId} items={items} address={t('C:\\Archive95\\Proyectos', 'C:\\Archive95\\Projects')} empty="" />

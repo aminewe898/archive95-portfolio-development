@@ -1,12 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { about, chronology, languages, profile, projects, skills } from '@/lib/content'
+import { about, asset, chronology, languages, profile, projects, skills } from '@/lib/content'
 import { OsIcon } from '../icons'
 import { MenuBar } from '../menu-bar'
 import { useOs } from '../os-context'
 
-const PDF = '/assets/cv-mohamed-amine-aslimani.pdf'
+const PDF = asset('/assets/cv-mohamed-amine-aslimani.pdf')
 
 export function ResumeApp({ winId }: { winId: string }) {
   const { t, lang, close, open } = useOs()

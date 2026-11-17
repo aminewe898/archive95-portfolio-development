@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { readPreference, writePreference } from '../storage'
 import { useState } from 'react'
-import { profile } from '@/lib/content'
+import { asset, profile } from '@/lib/content'
 import { OsIcon } from '../icons'
 import { useOs } from '../os-context'
 
@@ -37,7 +37,7 @@ export function WelcomeApp({ winId }: { winId: string }) {
           {profile.name} — {profile.role[lang]}
         </p>
       </div>
-      <div className="welcome-art"><Image src="/art/retro/welcome.svg" width={640} height={360} unoptimized priority alt={t('Ordenador retro, servidor y disquete en pixel art', 'Pixel-style retro computer, server and floppy disk')} /><span>{t('SISTEMAS · REDES · AUTOMATIZACIÓN', 'SYSTEMS · NETWORKS · AUTOMATION')}</span></div>
+      <div className="welcome-art"><Image src={asset('/art/retro/welcome.svg')} width={640} height={360} unoptimized priority alt={t('Ordenador retro, servidor y disquete en pixel art', 'Pixel-style retro computer, server and floppy disk')} /><span>{t('SISTEMAS · REDES · AUTOMATIZACIÓN', 'SYSTEMS · NETWORKS · AUTOMATION')}</span></div>
       <div className="welcome-main">
         <div className="welcome-tip">
           <OsIcon name="help" size={32} />

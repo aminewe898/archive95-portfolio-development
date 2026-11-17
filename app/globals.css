@@ -31,7 +31,7 @@ img { image-rendering: pixelated; }
 /* ---------- desktop ---------- */
 .os-root { position: fixed; inset: 0; display: flex; flex-direction: column; user-select: none; -webkit-user-select: none; }
 .os-root.wallpaper-teal { background: #008080; }
-.os-root.wallpaper-clouds { background: #3a6ea5 url('/wallpapers/clouds.png') center / cover no-repeat; }
+.os-root.wallpaper-clouds { background: #3a6ea5 var(--wall-clouds, url('/wallpapers/clouds.png')) center / cover no-repeat; }
 .os-root.wallpaper-pattern {
   background-color: #008080;
   background-image:
@@ -294,7 +294,7 @@ img { image-rendering: pixelated; }
 .monitor { align-self: center; display: flex; flex-direction: column; align-items: center; }
 .monitor-screen { width: 160px; height: 112px; border: 10px solid var(--face); box-shadow: inset -1px -1px #808080, inset 1px 1px #fff, 0 0 0 1px #000; }
 .monitor-screen.wallpaper-teal { background: #008080; }
-.monitor-screen.wallpaper-clouds { background: #3a6ea5 url('/wallpapers/clouds.png') center / cover; }
+.monitor-screen.wallpaper-clouds { background: #3a6ea5 var(--wall-clouds, url('/wallpapers/clouds.png')) center / cover; }
 .monitor-screen.wallpaper-pattern { background: #008080 repeating-conic-gradient(#007070 0 25%, #008080 0 50%) 0 0 / 4px 4px; }
 .monitor-screen.wallpaper-night { background: radial-gradient(ellipse at 50% 120%, #16206b, #000); }
 .monitor-screen.wallpaper-saver { background: #000 radial-gradient(#fff 1px, transparent 1px) 0 0 / 14px 14px; }

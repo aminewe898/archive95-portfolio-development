@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { profile, projectPath, projects, type Lang } from '@/lib/content'
+import { asset, profile, projectPath, projects, type Lang } from '@/lib/content'
 const AboutApp = dynamic(() => import('./apps/about').then(m => m.AboutApp))
 const MailApp = dynamic(() => import('./apps/mail').then(m => m.MailApp))
 const Minesweeper = dynamic(() => import('./apps/minesweeper').then(m => m.Minesweeper))
@@ -108,7 +108,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
   })
   const navigate = useCallback((next: DocumentRoute) => {
     const target = documentPath(next)
-    if (window.location.pathname + window.location.search !== target) window.history.pushState(null, '', target + (window.location.hash === '#portfolio-document' ? window.location.hash : ''))
+    if (documentPath(parseDocumentRoute(window.location.pathname, window.location.search)) !== target) window.history.pushState(null, '', asset(target) + (window.location.hash === '#portfolio-document' ? window.location.hash : ''))
     routeRef.current = next
     setRoute(next)
     setLangState(next.lang)
@@ -563,7 +563,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
 
   return (
     <OsContext.Provider value={api}>
-      <div className={`os-root wallpaper-${wallpaper}`} lang={lang} style={wallpaper === 'custom' && customWallpaper ? { backgroundImage: `url(${customWallpaper.image})`, backgroundRepeat: customWallpaper.mode === 'tiled' ? 'repeat' : 'no-repeat', backgroundPosition: customWallpaper.mode === 'tiled' ? '0 0' : 'center', backgroundSize: 'auto' } : undefined}>
+      <div className={`os-root wallpaper-${wallpaper}`} lang={lang} style={{ '--wall-clouds': `url(${asset('/wallpapers/clouds.png')})`, ...(wallpaper === 'custom' && customWallpaper ? { backgroundImage: `url(${customWallpaper.image})`, backgroundRepeat: customWallpaper.mode === 'tiled' ? 'repeat' : 'no-repeat', backgroundPosition: customWallpaper.mode === 'tiled' ? '0 0' : 'center', backgroundSize: 'auto' } : {}) } as React.CSSProperties}>
         <div className="sr-only">
           <h1>
             {profile.name} — {profile.role[lang]}
@@ -572,7 +572,7 @@ export function Desktop({ lang: initialLang, initial }: { lang: Lang; initial?: 
           <ul>
             {projects.map((p) => (
               <li key={p.slug}>
-                <a href={projectPath(lang, p.slug)}>{p.name[lang]}</a>: {p.summary[lang]}
+                <a href={asset(projectPath(lang, p.slug))}>{p.name[lang]}</a>: {p.summary[lang]}
               </li>
             ))}
             <li>
