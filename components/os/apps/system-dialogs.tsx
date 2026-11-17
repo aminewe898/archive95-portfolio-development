@@ -47,7 +47,7 @@ export function RunDialog({ winId }: { winId: string }) {
         <label htmlFor={`${winId}-input`}>{t('Abrir:', 'Open:')}</label>
         <input id={`${winId}-input`} list={`${winId}-list`} value={value} onChange={(e) => setValue(e.target.value)} autoFocus autoComplete="off" />
         <datalist id={`${winId}-list`}>
-          {['relay', 'cv', 'winmine', 'cmd', 'notepad', 'outlook', 'explorer', 'control', 'github'].map((v) => (
+          {['relay', 'cv', 'iexplore', 'mspaint', 'calc', 'winmine', 'cmd', 'notepad', 'outlook', 'explorer', 'control', 'taskman', 'sol', 'find', 'github'].map((v) => (
             <option key={v} value={v} />
           ))}
         </datalist>
@@ -64,7 +64,7 @@ export function RunDialog({ winId }: { winId: string }) {
 
 export function ShutdownDialog({ winId }: { winId: string }) {
   const { t, close, power } = useOs()
-  const [mode, setMode] = useState<'off' | 'restart'>('off')
+  const [mode, setMode] = useState<'off' | 'restart' | 'dos'>('off')
   return (
     <form
       className="run-dialog"
@@ -80,11 +80,15 @@ export function ShutdownDialog({ winId }: { winId: string }) {
           <legend>{t('¿Seguro que quieres:', 'Are you sure you want to:')}</legend>
           <div className="field-row">
             <input id={`${winId}-off`} type="radio" name="mode" checked={mode === 'off'} onChange={() => setMode('off')} />
-            <label htmlFor={`${winId}-off`}>{t('Apagar el equipo', 'Shut down the computer')}</label>
+            <label htmlFor={`${winId}-off`}>{t('¿Apagar el equipo?', 'Shut down the computer?')}</label>
           </div>
           <div className="field-row">
             <input id={`${winId}-restart`} type="radio" name="mode" checked={mode === 'restart'} onChange={() => setMode('restart')} />
-            <label htmlFor={`${winId}-restart`}>{t('Reiniciar el equipo', 'Restart the computer')}</label>
+            <label htmlFor={`${winId}-restart`}>{t('¿Reiniciar el equipo?', 'Restart the computer?')}</label>
+          </div>
+          <div className="field-row">
+            <input id={`${winId}-dos`} type="radio" name="mode" checked={mode === 'dos'} onChange={() => setMode('dos')} />
+            <label htmlFor={`${winId}-dos`}>{t('¿Reiniciar el equipo en modo MS-DOS?', 'Restart the computer in MS-DOS mode?')}</label>
           </div>
         </fieldset>
       </div>
@@ -108,25 +112,25 @@ export const wallpaperOptions: { id: Wallpaper; es: string; en: string }[] = [
 ]
 
 export function DisplayProperties({ winId }: { winId: string }) {
-  const { t, wallpaper, setWallpaper, close, startScreensaver } = useOs()
+  const { t, wallpaper, setWallpaper, close, startScreensaver, fullDrag, setFullDrag } = useOs()
   const [tab, setTab] = useState<'background' | 'saver'>('background')
   const [choice, setChoice] = useState<Wallpaper>(wallpaper)
 
   return (
     <div className="dialog-layout">
-      <menu role="tablist" className="os-tabs">
-        <li role="tab" aria-selected={tab === 'background'}>
-          <button type="button" className="tab-button" onClick={() => setTab('background')}>
+      <menu role="tablist" aria-label={t('Pantalla', 'Display')} className="os-tabs" onKeyDown={e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const next=e.key==='Home'?'background':e.key==='End'?'saver':tab==='background'?'saver':'background';setTab(next);document.getElementById(`${winId}-${next}-tab`)?.focus()}}}>
+        <li role="presentation">
+          <button type="button" role="tab" id={`${winId}-background-tab`} aria-controls={`${winId}-panel`} aria-selected={tab==='background'} tabIndex={tab==='background'?0:-1} className="tab-button" onClick={() => setTab('background')}>
             {t('Fondo', 'Background')}
           </button>
         </li>
-        <li role="tab" aria-selected={tab === 'saver'}>
-          <button type="button" className="tab-button" onClick={() => setTab('saver')}>
+        <li role="presentation">
+          <button type="button" role="tab" id={`${winId}-saver-tab`} aria-controls={`${winId}-panel`} aria-selected={tab==='saver'} tabIndex={tab==='saver'?0:-1} className="tab-button" onClick={() => setTab('saver')}>
             {t('Protector de pantalla', 'Screen Saver')}
           </button>
         </li>
       </menu>
-      <div className="window tab-panel" role="tabpanel">
+      <div className="window tab-panel" role="tabpanel" id={`${winId}-panel`} aria-labelledby={`${winId}-${tab}-tab`}>
         <div className="window-body tab-panel-body display-body">
           <div className="monitor" aria-hidden="true">
             <div className={`monitor-screen wallpaper-${tab === 'saver' ? 'saver' : choice}`} />
@@ -142,6 +146,10 @@ export function DisplayProperties({ winId }: { winId: string }) {
                   </option>
                 ))}
               </select>
+              <div className="field-row">
+                <input id={`${winId}-drag`} type="checkbox" checked={fullDrag} onChange={(e) => setFullDrag(e.target.checked)} />
+                <label htmlFor={`${winId}-drag`}>{t('Mostrar el contenido de la ventana al arrastrar', 'Show window contents while dragging')}</label>
+              </div>
             </div>
           ) : (
             <div className="saver-row">

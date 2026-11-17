@@ -1,12 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { about, chronology, languages, profile, projects, skills } from '@/lib/content'
+import { about, asset, chronology, languages, profile, projects, skills } from '@/lib/content'
 import { OsIcon } from '../icons'
 import { MenuBar } from '../menu-bar'
 import { useOs } from '../os-context'
 
-const PDF = '/assets/cv-mohamed-amine-aslimani.pdf'
+const PDF = asset('/assets/cv-mohamed-amine-aslimani.pdf')
 
 export function ResumeApp({ winId }: { winId: string }) {
   const { t, lang, close, open } = useOs()
@@ -20,7 +20,7 @@ export function ResumeApp({ winId }: { winId: string }) {
           {
             label: t('Archivo', 'File'),
             items: [
-              { label: t('Descargar PDF', 'Download PDF'), onSelect: () => window.open(PDF, '_blank', 'noopener') },
+              { label: t('Descargar PDF (inglés)', 'Download PDF (English)'), onSelect: () => window.open(PDF, '_blank', 'noopener') },
               { label: t('Imprimir…', 'Print…'), shortcut: 'Ctrl+P', onSelect: print },
               'separator',
               { label: t('Cerrar', 'Close'), onSelect: () => close(winId) },
@@ -39,7 +39,7 @@ export function ResumeApp({ winId }: { winId: string }) {
       <div className="toolbar">
         <div className="toolbar-group">
           <a className="button-link" href={PDF} download>
-            <OsIcon name="doc" size={16} /> {t('Descargar PDF', 'Download PDF')}
+            <OsIcon name="doc" size={16} /> {t('Descargar PDF (inglés)', 'Download PDF (English)')}
           </a>
           <button type="button" onClick={print}>{t('Imprimir', 'Print')}</button>
         </div>

@@ -2,16 +2,16 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { projects } from '@/lib/content'
+import { asset, projects } from '@/lib/content'
 import { OsIcon, type IconName } from '../icons'
 import { MenuBar } from '../menu-bar'
 import { useOs } from '../os-context'
 import { projectFile, projectIcon } from '../programs'
 import { useOpenGesture } from '../use-open-gesture'
 
-type Item = { id: string; name: string; icon: IconName; type: string; detail: string; status: string; preview?: string; onOpen: () => void }
+export type Item = { id: string; name: string; icon: IconName; type: string; detail: string; status: string; preview?: string; onOpen: () => void }
 
-function FileView({ items, address, empty, menus, toolbar, winId }: { items: Item[]; address: string; empty: string; menus?: Parameters<typeof MenuBar>[0]['menus']; toolbar?: React.ReactNode; winId: string }) {
+export function FileView({ items, address, addressIcon, empty, menus, toolbar, winId }: { addressIcon?: IconName; items: Item[]; address: string; empty: string; menus?: Parameters<typeof MenuBar>[0]['menus']; toolbar?: React.ReactNode; winId: string }) {
   const { t, close } = useOs()
   const [view, setView] = useState<'icons' | 'details'>('icons')
   const [selected, setSelected] = useState<string | null>(null)
@@ -36,7 +36,7 @@ function FileView({ items, address, empty, menus, toolbar, winId }: { items: Ite
         <label className="address">
           <span>{t('Dirección', 'Address')}</span>
           <span className="address-field">
-            <OsIcon name="folderOpen" size={16} />
+            <OsIcon name={addressIcon ?? 'folderOpen'} size={16} />
             {address}
           </span>
         </label>
@@ -125,7 +125,7 @@ export function ProjectsExplorer({ winId }: { winId: string }) {
     type: p.category[lang],
     detail: p.technologies.slice(0, 3).join(', '),
     status: `${p.name[lang]} — ${p.summary[lang]}`,
-    preview: `/art/retro/${p.illustration}.svg`,
+    preview: asset(`/art/retro/${p.illustration}.svg`),
     onOpen: () => open('project', p.slug),
   }))
   return <FileView winId={winId} items={items} address={t('C:\\Archive95\\Proyectos', 'C:\\Archive95\\Projects')} empty="" />

@@ -29,6 +29,14 @@ import { FolderFile } from '@react95/icons/FolderFile'
 import { Computer3 } from '@react95/icons/Computer3'
 import { Rundll1 } from '@react95/icons/Rundll1'
 import { Keys } from '@react95/icons/Keys'
+import { Ie } from '@react95/icons/Ie'
+import { Mspaint } from '@react95/icons/Mspaint'
+import { Calculator } from '@react95/icons/Calculator'
+import { Taskman100 } from '@react95/icons/Taskman100'
+import { Sol1 } from '@react95/icons/Sol1'
+import { FileFind } from '@react95/icons/FileFind'
+import { ReaderDisket } from '@react95/icons/ReaderDisket'
+import { MediaCd } from '@react95/icons/MediaCd'
 
 type Variant = string
 type IconComponent = ComponentType<SVGProps<SVGSVGElement> & { variant?: Variant }>
@@ -38,6 +46,13 @@ const icon = (C: unknown, large: Variant, small?: Variant): Entry => ({ C: C as 
 
 function SnakeIcon({ variant: _variant, ...props }: SVGProps<SVGSVGElement> & { variant?: string }) {
   return <svg {...props} viewBox="0 0 32 32" shapeRendering="crispEdges"><path fill="#000" d="M3 6h19v9H11v5h15v9H3V17h12v-5H3z"/><path fill="#008000" d="M4 7h17v7H10v7h15v7H4V18h12v-7H4z"/><path fill="#80ff80" d="M4 7h17v2H6v2H4zm0 11h12v2H6v6H4z"/><path fill="#fff" d="M17 8h2v2h-2z"/><path fill="#f00" d="M25 3h4v4h-4z"/></svg>
+}
+
+// The package only ships a 16px Internet Explorer icon; the globe stands in at desktop size.
+function InternetIcon({ variant, ...props }: SVGProps<SVGSVGElement> & { variant?: string }) {
+  const Small = Ie as unknown as IconComponent
+  const Large = Globe as unknown as IconComponent
+  return variant === '16x16_8' ? <Small variant="16x16_8" {...props} /> : <Large variant="32x32_4" {...props} />
 }
 
 const library = {
@@ -72,6 +87,14 @@ const library = {
   pc: icon(Computer3, '32x32_4', '16x16_4'),
   run: icon(Rundll1, '32x32_4'),
   keys: icon(Keys, '32x32_4'),
+  ie: icon(InternetIcon, '32x32_4', '16x16_8'),
+  paint: icon(Mspaint, '32x32_4', '16x16_4'),
+  calc: icon(Calculator, '32x32_4', '16x16_4'),
+  taskman: icon(Taskman100, '32x32_4'),
+  sol: icon(Sol1, '32x32_4', '16x16_4'),
+  find: icon(FileFind, '32x32_4', '16x16_4'),
+  floppy: icon(ReaderDisket, '32x32_4', '16x16_4'),
+  cd: icon(MediaCd, '32x32_4', '16x16_4'),
 } satisfies Record<string, Entry>
 
 export type IconName = keyof typeof library

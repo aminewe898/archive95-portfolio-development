@@ -27,3 +27,6 @@ archive95-desktop.png
 # Visual review captures
 before-polish.png
 polish-*.png
+
+# Static export (GitHub Pages build)
+/out/

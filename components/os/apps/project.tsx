@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useState } from 'react'
-import { profile, projectPath, projects } from '@/lib/content'
+import { asset, profile, projectPath, projects } from '@/lib/content'
 import { OsIcon } from '../icons'
 import { MenuBar } from '../menu-bar'
 import { useOs } from '../os-context'
@@ -20,7 +20,7 @@ export function ProjectViewer({ slug, winId, suspended = false }: { slug: string
   const repo = p.evidence?.[0]?.url
 
   const copyLink = async () => {
-    const url = `${window.location.origin}${projectPath(lang, p.slug)}`
+    const url = `${window.location.origin}${asset(projectPath(lang, p.slug))}`
     try {
       await navigator.clipboard.writeText(url)
       message({ title: t('Enlace copiado', 'Link copied'), text: t(`Se copió el enlace al portapapeles:\n${url}`, `The link was copied to the clipboard:\n${url}`), kind: 'info' })
@@ -64,7 +64,7 @@ export function ProjectViewer({ slug, winId, suspended = false }: { slug: string
       <div className="toolbar">
         <div className="toolbar-group">
           <button type="button" onClick={() => open('project', prev.slug)} aria-label={`${t('Anterior', 'Previous')}: ${prev.name[lang]}`}>
-            ◄ {t('Anterior', 'Back')}
+            ◄ {t('Anterior', 'Previous')}
           </button>
           <button type="button" onClick={() => open('project', next.slug)} aria-label={`${t('Siguiente', 'Next')}: ${next.name[lang]}`}>
             {t('Siguiente', 'Next')} ►
@@ -87,7 +87,8 @@ export function ProjectViewer({ slug, winId, suspended = false }: { slug: string
         <button type="button" aria-pressed={view === 'dossier'} onClick={() => setView('dossier')}><OsIcon name="doc" size={16}/>{t('Dossier del proyecto', 'Project dossier')}</button>
         <span>{t('Explora cómo funciona', 'Explore how it works')}</span>
       </div>
-      {view === 'demo' ? <div className="demo-scroll"><ProjectDemo key={slug} slug={slug} suspended={suspended}/><ProjectEvidence project={p} readDossier={()=>setView('dossier')}/></div> : <div className="sunken-panel doc-scroll">
+      <div className="demo-scroll" hidden={view !== 'demo'}><ProjectDemo key={slug} slug={slug} suspended={suspended || view !== 'demo'}/><ProjectEvidence project={p} readDossier={()=>setView('dossier')}/></div>
+      {view === 'dossier' && <div className="sunken-panel doc-scroll">
         <article className="doc-page" style={{ '--document-zoom': zoom } as React.CSSProperties}>
           <p className="doc-kicker">
             ARCHIVE / {String(index + 1).padStart(2, '0')} · {p.category[lang]}
@@ -100,7 +101,7 @@ export function ProjectViewer({ slug, winId, suspended = false }: { slug: string
             ))}
           </ul>
           <figure className="doc-figure">
-            <Image src={`/art/retro/${p.illustration}.svg`} unoptimized width={640} height={360} sizes="(max-width: 640px) 90vw, 560px" alt={t(`Ilustración retro de ${p.name.es}`, `Retro illustration of ${p.name.en}`)} />
+            <Image src={asset(`/art/retro/${p.illustration}.svg`)} unoptimized width={640} height={360} sizes="(max-width: 640px) 90vw, 560px" alt={t(`Ilustración retro de ${p.name.es}`, `Retro illustration of ${p.name.en}`)} />
             <figcaption>{t('Fig. 1 — Ilustración del sistema.', 'Fig. 1 — Conceptual system illustration.')}</figcaption>
           </figure>
           {p.sections.map((s, i) => (

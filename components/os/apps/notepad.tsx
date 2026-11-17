@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import { profile } from '@/lib/content'
 import { MenuBar } from '../menu-bar'
 import { useOs } from '../os-context'
+import { readPreference, writePreference } from '../storage'
 
 export function NotepadApp({ blank, winId }: { blank?: boolean; winId: string }) {
   const { t, close, message, open } = useOs()
@@ -11,8 +12,9 @@ export function NotepadApp({ blank, winId }: { blank?: boolean; winId: string })
   const [wrap, setWrap] = useState(true)
   const [position, setPosition] = useState({ line: 1, column: 1 })
   const [saved, setSaved] = useState(false)
+  const draftKey = `a95-draft-${winId}`
   const [text, setText] = useState(() =>
-    blank
+    (typeof window !== 'undefined' ? readPreference(draftKey, true) : null) ?? (blank
       ? ''
       : t(
           `README.TXT
@@ -59,15 +61,20 @@ SHORTCUTS
 This file is editable. Go ahead, leave a note.
 
 — Amine`,
-        ),
+        )),
   )
+  const update = (value: string | ((v: string) => string)) => setText((v) => {
+    const next = typeof value === 'function' ? value(v) : value
+    writePreference(draftKey, next, true)
+    return next
+  })
 
   const insertDate = () => {
     const el = ref.current
     const stamp = new Date().toLocaleString()
-    if (!el) return setText((v) => v + stamp)
+    if (!el) return update((v) => v + stamp)
     const { selectionStart: s, selectionEnd: e } = el
-    setText((v) => v.slice(0, s) + stamp + v.slice(e))
+    update((v) => v.slice(0, s) + stamp + v.slice(e))
     setSaved(false)
     requestAnimationFrame(() => {
       el.focus()
@@ -131,7 +138,7 @@ This file is editable. Go ahead, leave a note.
         value={text}
         wrap={wrap ? 'soft' : 'off'}
         spellCheck={false}
-        onChange={(e) => { setText(e.target.value); setSaved(false) }}
+        onChange={(e) => { update(e.target.value); setSaved(false) }}
         onSelect={(e) => {
           const before = e.currentTarget.value.slice(0, e.currentTarget.selectionStart)
           const lines = before.split('\n')
@@ -145,7 +152,7 @@ This file is editable. Go ahead, leave a note.
         }}
       />
       <div className="status-bar">
-        <p className="status-bar-field status-grow" role="status">{saved ? t('Descarga iniciada', 'Download started') : t('Documento editable · Guarda una copia con Ctrl+S', 'Editable document · Save a copy with Ctrl+S')}</p>
+        <p className="status-bar-field status-grow" role="status">{saved ? t('Descarga iniciada', 'Download started') : t('Borrador de esta sesión · Guarda una copia con Ctrl+S', 'Draft kept for this session · Save a copy with Ctrl+S')}</p>
         <p className="status-bar-field">Ln {position.line}, Col {position.column}</p>
         <p className="status-bar-field">{text.length} {t('caracteres', 'characters')}</p>
       </div>

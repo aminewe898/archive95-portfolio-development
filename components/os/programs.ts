@@ -43,17 +43,39 @@ const aliases: Record<string, AppId> = {
   skills: 'skills',
   about: 'about',
   sysinfo: 'about',
-  mycomputer: 'about',
+  mycomputer: 'computer',
+  computer: 'computer',
+  mipc: 'computer',
+  sol: 'sol',
+  solitaire: 'sol',
+  solitario: 'sol',
+  find: 'find',
+  buscar: 'find',
+  timedate: 'datetime',
+  date: 'datetime',
   desk: 'display',
   display: 'display',
   welcome: 'welcome',
   recycle: 'recycle',
+  iexplore: 'ie',
+  ie: 'ie',
+  internet: 'ie',
+  web: 'ie',
+  mspaint: 'paint',
+  pbrush: 'paint',
+  paint: 'paint',
+  calc: 'calc',
+  calculator: 'calc',
+  calculadora: 'calc',
+  taskman: 'taskman',
+  taskmgr: 'taskman',
 }
 
 export function resolveProgram(input: string): Program | null {
   const name = input.trim().toLowerCase().replace(/^[a-z]:\\.*\\/, '').replace(/\.(exe|doc)$/, '')
   if (!name) return null
-  if (name === 'github' || name.startsWith('http')) return { url: name.startsWith('http') ? input.trim() : profile.github }
+  if (name === 'github') return { url: profile.github }
+  if (/^(https?:\/\/|www\.)/.test(name)) return { app: 'ie', arg: input.trim() }
   if (aliases[name]) return { app: aliases[name] }
   const project = projects.find((p) => p.slug === name || projectFile(p.slug).toLowerCase().replace(/\.(exe|doc)$/, '') === name || p.slug.startsWith(name))
   if (project) return { app: 'project', arg: project.slug }

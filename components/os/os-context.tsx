@@ -21,8 +21,16 @@ export type AppId =
   | 'run'
   | 'shutdown'
   | 'message'
+  | 'ie'
+  | 'paint'
+  | 'calc'
+  | 'taskman'
+  | 'computer'
+  | 'find'
+  | 'datetime'
+  | 'sol'
 
-export type Wallpaper = 'teal' | 'clouds' | 'pattern' | 'night'
+export type Wallpaper = 'teal' | 'clouds' | 'pattern' | 'night' | 'custom'
 
 export type MessageSpec = { title: string; text: string; kind?: 'info' | 'warning' | 'question' }
 
@@ -48,13 +56,18 @@ export type OsApi = {
   message: (spec: MessageSpec) => void
   wallpaper: Wallpaper
   setWallpaper: (w: Wallpaper) => void
+  setCustomWallpaper: (image: string, mode?: 'tiled' | 'centered') => void
+  resizeWindow: (id: string, w: number, h: number) => void
+  /** False (the Windows 95 default) drags an outline; true redraws the window while it moves. */
+  fullDrag: boolean
+  setFullDrag: (on: boolean) => void
   volume: number
   setVolume: (value: number) => void
   soundOn: boolean
   setSoundOn: (on: boolean) => void
   play: (name: SoundName) => void
   setLang: (lang: Lang) => void
-  power: (mode: 'off' | 'restart') => void
+  power: (mode: 'off' | 'restart' | 'dos') => void
   startScreensaver: () => void
   recycleEmptied: boolean
   emptyRecycle: () => void

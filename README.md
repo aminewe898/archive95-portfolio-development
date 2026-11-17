@@ -22,6 +22,18 @@ Production: `pnpm build`, then `pnpm start`. Type checking: `pnpm typecheck`.
 
 Snake is available through `SNAKE.EXE` on the desktop, Start → Programs → Snake, `SNAKE` in Run, or `START SNAKE` in MS-DOS. Use arrow keys or WASD to steer, Space/P to pause, and F2 to restart; directional buttons support touch. The game pauses when inactive, minimized, or hidden. Its best score is stored locally when browser storage is available. Run `pnpm test:snake` for the game rules and collision checks.
 
+## Desktop programs and shell
+
+Besides the portfolio apps, the desktop includes:
+
+- **Internet Explorer** — loads real pages in a sandboxed frame. The year selector (1996, 1998, 2001, 2005) loads an archived copy through the Wayback Machine. There is no proxy: sites that forbid embedding are offered in a new tab or as an archived copy.
+- **My Computer** — drives and folders (A:, C:, D:) that lead to the same projects, documents and programs.
+- **Find** (Start → Find or F3) — searches projects, skills, the CV and programs.
+- **Paint**, **Calculator**, **Solitaire**, **Date/Time Properties** (double-click the clock) and **Close Program**.
+- Windows resize from every edge, have a control menu on the title-bar icon, and can be cascaded or tiled from the taskbar's right-click menu. Desktop icons support right-click menus, drag selection and arrow keys.
+
+Run `pnpm test:sol` for the Solitaire rules, alongside `pnpm test:snake` and `pnpm test:demo`.
+
 ## Content and artwork
 
 `lib/content.ts` contains the profile and project content. The active desktop lives in `components/os`.
@@ -32,11 +44,17 @@ The full asset build (`pnpm assets`, also run before production builds) generate
 
 ## Deployment
 
-The configured production origin is `https://portfolio.cloudbyamine.org` (the user's proposed Oracle deployment domain). Override `NEXT_PUBLIC_SITE_URL` before building if the final domain changes; rebuild to regenerate canonical links, social URLs, structured data, and the bilingual sitemap. The GitHub repository is private; pushing source does not deploy a public website.
+The configured production origin is `https://portfolio.cloudbyamine.org` (the user's proposed Oracle deployment domain). Override `NEXT_PUBLIC_SITE_URL` before building if the final domain changes; rebuild to regenerate canonical links, social URLs, structured data, and the bilingual sitemap. 
 
 For the Oracle VM, use a supported Node.js version and pnpm, then run `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test:demo`, and `pnpm build` from the repository. Run `pnpm start` as a persistent service behind an HTTPS reverse proxy. Set `NEXT_PUBLIC_SITE_URL` to the final public origin **before** the build. After starting the service, set `VERIFY_ORIGIN` to its local HTTP address and run `node scripts/verify.mjs` to check the routes and generated assets. DNS, TLS, the reverse proxy, and the service manager must be configured on the VM; this repository does not configure them.
 
 See `VERIFICATION.md` for checks and limitations.
+
+### GitHub Pages
+
+Every push to `main` runs `.github/workflows/pages.yml`, which checks types and game rules, builds a static export (`STATIC_EXPORT=1`) and publishes it to GitHub Pages at https://aminewe898.github.io/archive95-portfolio-development/. The workflow sets `NEXT_PUBLIC_BASE_PATH` and `NEXT_PUBLIC_SITE_URL` from the Pages settings, so links, images and canonical URLs include the repository sub-path. GitHub Pages cannot send the custom security headers from `next.config.mjs`; those apply only to the Node server build.
+
+To try the static build locally, run `STATIC_EXPORT=1 NEXT_PUBLIC_BASE_PATH=/archive95-portfolio-development pnpm build` and serve `out/` under that path.
 
 ## Interactive project demos
 
